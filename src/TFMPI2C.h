@@ -148,7 +148,7 @@
 
 // Command Parameters
 #define    BAUD_9600          0x002580   // UART serial baud rate
-#define    BAUD 14400         0x003840   // expressed as hexidecimal
+#define    BAUD_14400         0x003840   // expressed as hexidecimal
 #define    BAUD_19200         0x004B00
 #define    BAUD_56000         0x00DAC0
 #define    BAUD_115200        0x01C200

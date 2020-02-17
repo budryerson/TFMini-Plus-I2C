@@ -1,8 +1,9 @@
 /* File Name: TFMPI2C.cpp
- * Version: 0.1.1 - 1 NOV 2019
+ * Developer: Bud Ryerson
+ * Date:      17 FEB 2020
+ * Version:   0.2.1
  * Described: Arduino Library for the Benewake TFMini-Plus Lidar sensor
  *            configured for the I2C interface
- * Developer: Bud Ryerson
  *
  * Default settings for the TFMini-Plus I2C are:
  *    0x10  -  slave device address
@@ -47,7 +48,7 @@
  *  from the library's lists of defined parameters.
  */
 
-#include <TFMPI2C.h>       //  Bud's TFMini-Plujs I2C library
+#include <TFMPI2C.h>       //  TFMini-Plus I2C library header
 #include <Wire.h>          //  Arduino I2C/Two-Wire Library
 
 // Constructor/Destructor
@@ -63,9 +64,9 @@ bool TFMPI2C::getData( uint16_t &dist, uint16_t &flux, uint16_t &temp, uint8_t a
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 0 - Command device to ready distance data in centimeters
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-		// The device can also return data in millimeters, but its
-		// resolution is only 5mm (o.5cm) and its accuracy is ±5cm.
-		if( sendCommand( I2C_FORMAT_CM, 0, addr) != true) return false;
+    // The device can also return data in millimeters, but its
+    // resolution is only 5mm (o.5cm) and its accuracy is ±5cm.
+    if( sendCommand( I2C_FORMAT_CM, 0, addr) != true) return false;
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 1 - Get data from the device.
@@ -112,9 +113,9 @@ bool TFMPI2C::getData( uint16_t &dist, uint16_t &flux, uint16_t &temp, uint8_t a
     flux = frame[ 4] + ( frame[ 5] << 8);
     temp = frame[ 6] + ( frame[ 7] << 8);
     // convert temp code to degrees Celsius
-		temp = ( temp >> 3) - 256;
+    temp = ( temp >> 3) - 256;
     // convert temp to degrees Farenheit
-		if( scale == TFMP_FAREN)	temp = uint8_t( temp * 9 / 5) + 32;
+    if( scale == TFMP_FAREN)  temp = uint8_t( temp * 9 / 5) + 32;
 
     return true;
 }
@@ -210,8 +211,13 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 3 - Get command reply data back from the device.
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // Request reply data from the slave device address
-    // and keep the I2C interface open.
+    
+    //  An I2C address change will take effect immediately
+    //  so use the new 'param' address for the reply.
+    if( cmnd == SET_I2C_ADDRESS) addr = uint8_t(param);
+
+    // Request reply data from the device and
+    // keep the I2C interface open.
     Wire.requestFrom( (int)addr, (int)replyLen, (int)1);
 
     memset( reply, 0, sizeof( reply));   // Clear the reply data buffer.
@@ -219,7 +225,7 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     {
       reply[ i] = (uint8_t)Wire.read();
     }
-		
+    
     Wire.write( 0);          // Put a zero in the xmit buffer.
     Wire.endTransmission();  // Send and Close the I2C interface.
 
@@ -295,23 +301,23 @@ void TFMPI2C::printErrorStatus()
     else if( status == TFMP_I2CWRITE)  Serial.print( "I2CWRITE");
     else if( status == TFMP_I2CLENGTH) Serial.print( "I2CLENGTH");
     else Serial.print( "OTHER");
-		Serial.println();
-		
-	  Serial.print("Reply:");
-		for( uint8_t i = 0; i < TFMP_REPLY_SIZE; i++)
-		{
-			Serial.print(" ");
-			Serial.print( reply[ i], HEX);
-		}
-		Serial.println();
-		
-		Serial.print("Data:");
-		for( uint8_t i = 0; i < TFMP_REPLY_SIZE; i++)
-		{
-			Serial.print(" ");
-			Serial.print( frame[ i], HEX);
-		}
-		Serial.println();
+    Serial.println();
+    
+    Serial.print("Reply:");
+    for( uint8_t i = 0; i < TFMP_REPLY_SIZE; i++)
+    {
+      Serial.print(" ");
+      Serial.print( reply[ i], HEX);
+    }
+    Serial.println();
+    
+    Serial.print("Data:");
+    for( uint8_t i = 0; i < TFMP_REPLY_SIZE; i++)
+    {
+      Serial.print(" ");
+      Serial.print( frame[ i], HEX);
+    }
+    Serial.println();
 }
 
 // Prompt for Y/N response
@@ -319,15 +325,15 @@ bool TFMPI2C::getResponse()
 {
     // One second timer if serial read never occurs
     uint32_t serialTimeout = millis() + 5000;
-		static char charIn;
-		printf("Y/N? ");
+    static char charIn;
+    printf("Y/N? ");
     while( Serial.available() || ( millis() <  serialTimeout))
-		{
-			charIn = Serial.read();
-			if( charIn == 'Y' || charIn == 'y') return true;
+    {
+      charIn = Serial.read();
+      if( charIn == 'Y' || charIn == 'y') return true;
           else if( charIn == 'N' || charIn == 'n') return false;
-		}
-		return false;
+    }
+    return false;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

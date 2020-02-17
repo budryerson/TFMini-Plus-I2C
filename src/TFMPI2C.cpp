@@ -115,7 +115,7 @@ bool TFMPI2C::getData( uint16_t &dist, uint16_t &flux, uint16_t &temp, uint8_t a
     // convert temp code to degrees Celsius
     temp = ( temp >> 3) - 256;
     // convert temp to degrees Farenheit
-    if( scale == TFMP_FAREN)  temp = uint8_t( temp * 9 / 5) + 32;
+    //if( scale == TFMP_FAREN)  temp = uint8_t( temp * 9 / 5) + 32;
 
     return true;
 }

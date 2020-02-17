@@ -14,7 +14,7 @@ TFMPI2C KEYWORD1
 
 getData KEYWORD2
 sendCommand KEYWORD2
-printErrorStatus KEYWORD2
+printErrorStatus  KEYWORD2
 getResponse KEYWORD2
 status  KEYWORD2
 version KEYWORD2

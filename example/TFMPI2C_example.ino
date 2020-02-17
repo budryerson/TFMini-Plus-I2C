@@ -126,6 +126,6 @@ void loop()
         printf( "Temp:%2u\°C",  tfTemp);   // display temperature,
         printf( "\r\n");                   // end-of-line.
     }
-    else tfmP.printErrorStatus();          // Otherwise, display error.
+    else tfmP.printErrorStatus();          // Otherwise, display error. 
 }
 // = = = = = = = = =  End of Main Loop  = = = = = = = = =

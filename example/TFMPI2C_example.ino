@@ -1,11 +1,12 @@
 /* File Name: TFMPI2C_example.ino
- * Developer: Bud Ryerson
  * Inception: 29 JAN 2019
- * Last work: 1 NOV 2019
+ * Last work: 17 FEB 2020
+ * Developer: Bud Ryerson
  *
  * Description: This Arduino sketch is used to test the Benewake
  * TFMini-Plus time-of-flight Lidar ranging sensor in the I2C
- * communication interface mode using the TFMPI2C library.
+ * communication interface mode with the default I2C address
+ * using the TFMPI2C library.
  *
  * Default settings for the TFMini-Plus I2C are:
  *    0x10  -  slave device address
@@ -20,8 +21,8 @@
  * regardless of any reset commands or power cycling until the I2C
  * command 'SET_UART_MODE' is sent.
  *
- * The TFMini-Plus supports "Fast" I2C clock speeds (up to 400KHz)
- * if your Arduino is capable of operating at that speed.
+ * NOTE: Remove comment slashes from line# 74 if your your Arduino
+ * is capable of operating at "Fast" I2C clock speeds (up to 400KHz).
  *
  * There are only two important functions: 'getData' and 'sendCommand'
  *
@@ -64,7 +65,7 @@
                       // devices such as the Galileo. Download from:
                       // https://github.com/spaniakos/AES/blob/master/printf.h
 
-#include <TFMPI2C.h>  // TFMini-Plus I2C Library v0.1.1
+#include <TFMPI2C.h>  // TFMini-Plus I2C Library v0.2.1
 TFMPI2C tfmP;         // Create a TFMini-Plus I2C object
 
 void setup()

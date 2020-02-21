@@ -39,11 +39,10 @@ Also, according to Benewake:
 
 Benewake says the data frame-rate is limited to 1KHz, which would suggest a 400Hz data sampling limit in **I2C** mode.  But Benewake also says data sampling should not exceed 100Hz.  They don't say why; but you might keep those supposed limitations in mind while you are using the **I2C** interface.
 
-Any change of device settings (frame-rate, baud-rate, etc.) must be followed by a `SAVE_SETTINGS` command or else the modified values may be lost when power is removed.  `SYSTEM_RESET` and `RESTORE_FACTORY_SETTINGS` do not require a `SAVE_SETTINGS` command.
+Frame-rate changes should be followed by a `SAVE_SETTINGS` command or may be lost when power is removed.  There is no way to determine what the data frame-rate is actually set to.
 
-The `SET_I2C_MODE` command does not require a subsequent `SAVE_SETTINGS` command.  Conveniently, the device will remain in **I2C** mode after power has been removed and restored.  Even a `RESTORE_FACTORY_SETTINGS` command will not restore the device to the default, **UART** communication interface mode.  The only way to return the device to serial mode is to send the `SET_SERIAL_MODE` command.
+The `RESTORE_FACTORY_SETTINGS` command will not restore the device to the default, **UART** communication interface mode.  The **only** way to return the device to serial mode is to send the `SET_SERIAL_MODE` command.
 
-NOTE: Upon initial application of power, the TFMini-Plus will start up and remain in **UART** mode for about ten seconds.  Brief necessary serial communication, such as a firmware update, can occur during this time.
 <hr>
 
 Also included in the repository are:

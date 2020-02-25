@@ -1,3 +1,7 @@
+:slightly_frowning_face:**Version 0.2.2 is the newest version of this library.** The Arduino IDE Library Manager incorrectly lists 0.4.0 as the newest version. DO NOT INSTALL VERSION 0.4.0.
+
+<hr>
+
 # TFMini-Plus-I2C
 ### Arduino library for the Benewake TFMini-Plus using I2C communication interface
 

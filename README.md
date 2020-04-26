@@ -28,11 +28,13 @@ The `sendCommand( cmnd, param, addr)` function sends an unsigned, 32-bit command
 **An erroneous command or parameter can block communication, and there is no external means of resetting the device to factory defaults.**
 <hr>
 
-In **I2C** mode, the TFMini-Plus functions as an I2C slave device.  The default address is `16` (`0x10` Hex), but is user-programable by sending the `SET_I2C_ADDRESS` command and a parameter in the range of `1` to `127`.  The new address will take effect immediately and permanently without sending a `SAVE_SETTINGS` command.
+In **I2C** mode, the TFMini-Plus functions as an I2C slave device.  The default address is `0x10` (16 decimal), but is user-programable by sending the `SET_I2C_ADDRESS` command and a parameter in the range of `1` to `127`.  The new address will take effect immediately and permanently without sending a `SAVE_SETTINGS` command.
 
-If the device I2C address is any value other than the default of `16`, the new, non-default address must be included with every subsequent library function as the optional `addr` byte.
+Although I2C address of the device can be changed while still in UART communication mode, the value of an I2C address cannot be tested in UART mode. For that, the devic must be in I2C communication mode and then you can scan the I2C bus for the presence of the device's addres. The `TFMPI2C_changeI2C.ino` sketch in the example folder includes a `scanAddr()` function.
 
-The `RESTORE_FACTORY_SETTINGS` command will reset the device to the default address of `0x10`. The `SYSTEM_RESET` command appears to have no effect on the I2C address.
+If the I2C device address is any other than the default value of `0x10`, that new, non-default address must be included with every subsequent command, includeing `getData()`, as the optional `addr` byte.
+
+The `RESTORE_FACTORY_SETTINGS` command will reset the device to the default address of `0x10`. The `SYSTEM_RESET` command appears to have no effect on the I2C address.  The `RESTORE_FACTORY_SETTINGS` command will **not** restore the device to the default, **UART** communication interface mode.  The **only** way to return the device to serial mode is to send the `SET_SERIAL_MODE` command.
 
 Benewake is not forthcoming about the internals of the device, however they did share this:
 >Some commands that modify internal parameters are processed within 1ms.  Some commands (that) require the MCU to communicate with other chips may take several ms.  And some commands, such as saving configuration and restoring the factory (default settings) need to erase the FLASH of the MCU, which may take several hundred ms.
@@ -44,8 +46,6 @@ Also, according to Benewake:
 Benewake says the data frame-rate is limited to 1KHz, which would suggest a 400Hz data sampling limit in **I2C** mode.  But Benewake also says data sampling should not exceed 100Hz.  They don't say why; but you might keep those supposed limitations in mind while you are using the **I2C** interface.
 
 Frame-rate changes should be followed by a `SAVE_SETTINGS` command or may be lost when power is removed.  There is no way to determine what the data frame-rate is actually set to.
-
-The `RESTORE_FACTORY_SETTINGS` command will not restore the device to the default, **UART** communication interface mode.  The **only** way to return the device to serial mode is to send the `SET_SERIAL_MODE` command.
 
 <hr>
 

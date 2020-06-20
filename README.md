@@ -1,7 +1,7 @@
 # TFMini-Plus-I2C
 ### Arduino library for the Benewake TFMini-Plus using I2C communication interface
 
-*The Benewake TFMini-Plus is a unique product, and it is not an enhanced version of the Benewake TFMini. It has its own command and data structures.  This library is not compatible with the TFMini product.*
+The **TFMini-S** is said to be compatible with the **TFMini-Plus** and therefore able to use this library.  However, this library is *not compatible* with the **TFMini**, which is a different product with its own command and data structure.
 
 Since hardware version 1.3.5 and firmware version 1.9.0, the TFMini-Plus can be configured to use the **I2C** (two-wire) protocol for its communication interface.  The command to configure the device for **I2C** communication must be sent using the **UART** interface.  Therefore, configuration should be made prior to the device's service installation either by using the TFMini-Plus library or by using a serial GUI test application available from the manufacturer.  Thereafter, this libarary can be used for all further communication with the device.
 

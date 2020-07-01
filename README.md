@@ -1,4 +1,10 @@
 # TFMini-Plus-I2C
+### PLEASE NOTE:
+With version v1.4.0, data variables are changed from unsigned to signed 16bit integers in order to support `dist` (distance) and `flux` (signal strength) error codes such as -1, -2 & -4. These codes are listed in the TFMini-S Product Manual contained in the **documents** folder.
+
+In the example code, `printStatus()` or `printErrorStatus()` has been replaced with `printFrame()` in response to a failed `getData()` or `printReply()` if responding to `sendCommand()`.
+<hr />
+
 ### Arduino library for the Benewake TFMini-Plus using I2C communication interface
 
 The **TFMini-S** is said to be compatible with the **TFMini-Plus** and therefore able to use this library.  However, this library is *not compatible* with the **TFMini**, which is a different product with its own command and data structure.

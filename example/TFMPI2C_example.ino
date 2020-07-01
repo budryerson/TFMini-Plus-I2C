@@ -1,6 +1,6 @@
 /* File Name: TFMPI2C_example.ino
- * Inception: 29 JAN 2019
- * Last work: 17 FEB 2020
+ * Inception: 29JAN2019
+ * Last work: 20JUN2020
  * Developer: Bud Ryerson
  *
  * Description: This Arduino sketch is used to test the Benewake
@@ -21,8 +21,8 @@
  * regardless of any reset commands or power cycling until the I2C
  * command 'SET_UART_MODE' is sent.
  *
- * NOTE: Remove comment slashes from line# 74 if your your Arduino
- * is capable of operating at "Fast" I2C clock speeds (up to 400KHz).
+ * NOTE: If your your Arduino is capable of operating at "Fast" I2C
+ * clock speeds (400KHz), then remove comment slashes from line #75.
  *
  * There are only two important functions: 'getData' and 'sendCommand'
  *
@@ -37,16 +37,17 @@
  *     flux - strength, voltage or quality of returned signal
  *            in arbitrary units: 0 - 65535Z
  *     temp - chip temperature in degrees Celsius: -25°C to 125°C
- *  and sends;
- *     addr - optional unsigned 8-bit address value.
- *  - If default device address is used unchanged, the 'addr' value may
- *  be omitted.  Otherwise, a correct 'addr' value always must be sent.
- *  - If the function completes without error, it returns 'True' and sets
- *  a public, one-byte 'status' code to zero.  Otherwise. it returns
- *  'False' and sets the 'status' code to a library defined error code.
+ *  and sends...
+ *     addr - an optional unsigned 8-bit address value.
+ *
+ *  - If the default device address is used, the 'addr' value may be
+ *  mitted.  Otherwise, a correct 'addr' value always must be sent.
+ *  - If a function completes without error, it returns 'True' and sets
+ *  a public, one-byte 'status' code to zero ('READY').  Otherwise, it
+ *  returns 'False' and sets the 'status' code to a library defined error.
  *  
- *  NOTE: This library also includes a simple 'getData( dist)' function that
- *  passes back distance data only. It assumes use of the default I2C address.
+ *  NOTE: 'getData( dist)' is a simplified function that passes back
+ *  distance data only; but assumes use of the default I2C address.
  *
  * 'sendCommand( cmnd, param, addr)'
  *  The function sends an unsigned 32-bit command and an unsigned 32-bit
@@ -61,11 +62,11 @@
  */
 
 #include <Wire.h>     // Arduino standard I2C/Two-Wire Library
-#include "printf.h"   // Modified by to support Intel based Arduino
+#include "printf.h"   // Modified to support Intel based Arduino
                       // devices such as the Galileo. Download from:
                       // https://github.com/spaniakos/AES/blob/master/printf.h
 
-#include <TFMPI2C.h>  // TFMini-Plus I2C Library v0.2.2
+#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.4.0
 TFMPI2C tfmP;         // Create a TFMini-Plus I2C object
 
 void setup()
@@ -80,14 +81,14 @@ void setup()
     printf( "\r\nTFMPlus I2C Library Example\r\n");  // say 'hello'
 
     // Send some example commands to the TFMini-Plus
-    // - - - - - - - - - - - - - - - - - - - - - - - -
+    // - - Perform a system reset - - - - - - - - - - -
     printf( "System reset: ");
     if( tfmP.sendCommand( SYSTEM_RESET, 0))
     {
         printf( "passed.\r\n");
     }
-    else tfmP.printErrorStatus();
-    // - - - - - - - - - - - - - - - - - - - - - - - -
+    else tfmP.printReply();
+    // - - Display the firmware version - - - - - - - - -
     printf( "Firmware version: ");
     if( tfmP.sendCommand( OBTAIN_FIRMWARE_VERSION, 0))
     {
@@ -95,37 +96,37 @@ void setup()
         printf( "%1u.", tfmP.version[ 1]); // each separated by a dot
         printf( "%1u\r\n", tfmP.version[ 2]);
     }
-    else tfmP.printErrorStatus();
-    // - - - - - - - - - - - - - - - - - - - - - - - -
+    else tfmP.printReply();
+    // - - Set the data frame-rate to 250 - - - - - - - - -
     printf( "Data-Frame rate: ");
     if( tfmP.sendCommand( SET_FRAME_RATE, FRAME_250))
     {
         printf( "%2uHz.\r\n", FRAME_250);
     }
-    else tfmP.printErrorStatus();
+    else tfmP.printReply();
     // - - - - - - - - - - - - - - - - - - - - - - - -
 
     delay(500);            // And wait for half a second.
 }
 
-// Initialize variables
-uint16_t tfDist = 0;       // Distance to object in centimeters
-uint16_t tfFlux = 0;       // Signal strength or quality of return signal
-uint16_t tfTemp = 0;       // Internal temperature of Lidar sensor chip
+// Initialize data variables
+int16_t tfDist = 0;       // Distance to object in centimeters
+int16_t tfFlux = 0;       // Signal strength or quality of return signal
+int16_t tfTemp = 0;       // Internal temperature of Lidar sensor chip
 
 // = = = = = = = = = =  MAIN LOOP  = = = = = = = = = =
 void loop()
 {
-    delay(50);    //  Run loop at approximately 20Hz.
-
     tfmP.getData( tfDist, tfFlux, tfTemp); // Get a frame of data
     if( tfmP.status == TFMP_READY)         // If no error...
     {
-        printf( "Dist:%04ucm ", tfDist);   // display distance,
-        printf( "Flux:%05u ",   tfFlux);   // display signal strength/quality,
-        printf( "Temp:%2u\°C",  tfTemp);   // display temperature,
+        printf( "Dist:%04icm ", tfDist);   // display distance,
+        printf( "Flux:%05i ",   tfFlux);   // display signal strength/quality,
+        printf( "Temp:%2i\°C",  tfTemp);   // display temperature,
         printf( "\r\n");                   // end-of-line.
     }
-    else tfmP.printErrorStatus();          // Otherwise, display error. 
+    else tfmP.printFrame(); // Otherwise, display error and data frame
+    
+    delay(50);    //  Run loop at approximately 20Hz.
 }
 // = = = = = = = = =  End of Main Loop  = = = = = = = = =

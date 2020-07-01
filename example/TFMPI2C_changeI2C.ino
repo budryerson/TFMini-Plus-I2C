@@ -1,6 +1,7 @@
 /* File Name: TFMPI2C_changeI2C.ino 
  * Developer: Bud Ryerson
  * Inception: 16 FEB 2020
+ * Last work: 20JUN2020
  *
  * Description:
  *  Run an I2C address search.
@@ -11,11 +12,11 @@
  */
 
 #include <Wire.h>     // Arduino standard I2C/Two-Wire Library
-#include "printf.h"   // Modified by to support Intel based Arduino
+#include "printf.h"   // Modified to support Intel based Arduino
                       // devices such as the Galileo. Download from:
                       // https://github.com/spaniakos/AES/blob/master/printf.h
 
-#include <TFMPI2C.h>  // TFMini-Plus I2C Library v0.2.2
+#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.4.0
 TFMPI2C tfmP;         // Create a TFMini-Plus I2C object
 
 // Declare variables
@@ -62,12 +63,13 @@ void setup()
     Wire.begin();            // Initialize two-wire interface
     Serial.begin( 115200);   // Initialize terminal serial port
     printf_begin();          // Initialize printf library.
-	delay(20);
+	  delay(20);
+
     Serial.flush();          // Flush serial write buffer
     while( Serial.available())Serial.read();  // flush serial read buffer
 
     // Say hello
-    printf( "\r\n*****************************\r\n");
+    printlnf( "\r\n*****************************\r\n");
     printf( "\r\nThis sketch will command a TFMini-Plus device in");
     printf( "\r\nI2C communications mode to change the I2C address.");
     printf( "\r\nClose terminal window to halt program loop.\r\n");

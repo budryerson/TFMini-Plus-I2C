@@ -1,6 +1,6 @@
 # TFMini-Plus-I2C
 ### PLEASE NOTE:
-With version v1.4.0, data variables are changed from unsigned to signed 16bit integers in order to support `dist` (distance) and `flux` (signal strength) error codes such as -1, -2 & -4. These codes are listed in the TFMini-S Product Manual contained in the **documents** folder.
+With version v1.4.0, data variables are changed from unsigned to signed 16bit integers in order to support error codes returned in the `dist` (distance) and `flux` (signal strength) data. The only wokring error code at the moment is `-1` returned as `flux` data when the return signal is saturated.
 
 In the example code, `printStatus()` or `printErrorStatus()` has been replaced with `printFrame()` in response to a failed `getData()` or `printReply()` if responding to `sendCommand()`.
 <hr />
@@ -16,11 +16,11 @@ This library calls the Arduino standard I2C/Two-Wire Library.
 
 ### Arduino Library Commands
 
-The `getData( dist, flux, temp, addr)` function passes back three, unsigned, 16-bit data values and sends an optional, unsigned, 8-bit address.  If the default device address is used, the optional `addr` value may be omitted.  Otherwise, a correct `addr` value always must be sent.  If the function completes without error, it returns 'True' and sets the public, one-byte 'status' code to zero.  Otherwise, it returns 'False' and sets the 'status' code to a library defined error code.
+The `getData( dist, flux, temp, addr)` function passes back three, signed, 16-bit measurement data values and sends an optional, unsigned, 8-bit address.  If the default device address is used, the optional `addr` value may be omitted.  Otherwise, a correct `addr` value always must be sent.  If the function completes without error, it returns 'True' and sets the public, one-byte 'status' code to zero.  Otherwise, it returns 'False' and sets the 'status' code to a library defined error code.
 
-Measurement data values are passed-back in three, 16-bit, unsigned integer variables:
-<br />&nbsp;&nbsp;&#9679;&nbsp; `dist` Distance to target in centimeters. Range: 10 - 1200
-<br />&nbsp;&nbsp;&#9679;&nbsp; `flux` Strength or quality of returned signal in arbitrary units. Range: 0 - 65535
+Measurement data values are passed-back in three, 16-bit, signed integer variables:
+<br />&nbsp;&nbsp;&#9679;&nbsp; `dist` Distance to target in centimeters. Range: 0 - 1200
+<br />&nbsp;&nbsp;&#9679;&nbsp; `flux` Strength or quality of returned signal in arbitrary units. Range: 0 - 32767
 <br />&nbsp;&nbsp;&#9679;&nbsp; `temp` Temperature of the device in code. Range: -25°C to 125°C
 
 For further convenience and simplicity, a `getData( dist)` function is included. This function passes back data only to the `dist` variable and requires use of the default I2C address.

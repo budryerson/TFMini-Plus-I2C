@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C.cpp
  * Developer: Bud Ryerson
  * Date:      17 FEB 2020
- * Version:   1.4.0
+ * Version:   0.2.2
  * Described: Arduino Library for the Benewake TFMini-Plus Lidar sensor
  *            configured for the I2C interface
  *
@@ -46,19 +46,9 @@
  *  NOTE: The 'cmmd' value must be chosen from the library's list of defined
  *  commands. Parameters can be entered directly (0x10, 250, etc.) or chosen
  *  from the library's lists of defined parameters.
- 
- * v.1.4.0 - 15JUN20 - Changed all data variables from unsigned
-             to signed integers.  Defined abnormal data codes
-             as per TFMini-S Producut Manual
-           -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
-            Dist | Strength    |  Comment
-             -1    Other value   Strength ≤ 100
-             -2    -1            Signal strength saturation
-             -4    Other value   Ambient light saturation
-           -  -  -  -  -  -  -  -  -  -  -  -  -  -  -               
  */
 
-#include <TFMPI2C.h>       //  TFMini-Plus I2C library header
+#include "TFMPI2C.h"       //  TFMini-Plus I2C library header
 #include <Wire.h>          //  Arduino I2C/Two-Wire Library
 
 // Constructor/Destructor
@@ -67,7 +57,7 @@ TFMPI2C::~TFMPI2C(){}
 
 // = = = = =  GET A FRAME OF DATA FROM THE DEVICE  = = = = = = = = = =
 //
-bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr)
+bool TFMPI2C::getData( uint16_t &dist, uint16_t &flux, uint16_t &temp, uint8_t addr)
 {
     status = TFMP_READY;    // clear status of any error condition
 
@@ -77,7 +67,7 @@ bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr
     // The device can also return data in millimeters, but its
     // resolution is only 5mm (o.5cm) and its accuracy is ±5cm.
     if( sendCommand( I2C_FORMAT_CM, 0, addr) != true) return false;
-
+    delay(5);
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 1 - Get data from the device.
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -115,51 +105,45 @@ bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr
       status = TFMP_CHECKSUM;  // then set error...
       return false;            // and return "false."
     }
-
+    if(DBUG_I2CFrames)
+    {
+      char st[100];
+      sprintf(st,"\ndat:[%02X %02X %02X %02X %02X %02X %02X %02X %02X]", 
+                  frame[0],frame[1],frame[2],frame[3],
+                  frame[4],frame[5],frame[6],frame[7],frame[8]);
+      Serial.println(st);
+    }
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    // Step 3 - Interpret the frame data
-    //          and if okay, then go home
+    // Step 3 - Reorder the frame data and go home
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     dist = frame[ 2] + ( frame[ 3] << 8);
     flux = frame[ 4] + ( frame[ 5] << 8);
     temp = frame[ 6] + ( frame[ 7] << 8);
-    // Convert temp code to degrees Celsius.
+    // convert temp code to degrees Celsius
     temp = ( temp >> 3) - 256;
-    // Convert Celsius to degrees Farenheit
-    // temp = uint8_t( temp * 9 / 5) + 32;
-    
-    // - - Evaluate Abnormal Data Values - -
-    // Values are from the TFMini-S Product Manual
-    // Signal strength <= 100
-    if( dist == -1) status = TFMP_WEAK;
-    // Signal Strength saturation
-    else if( flux == -1) status = TFMP_STRONG;
-    // Ambient Light saturation
-    else if( dist == -4) status = TFMP_FLOOD;
-    // Data is apparently okay
-    else status = TFMP_READY;
-    
-    if( status != TFMP_READY) return false;
-    else return true;
+    // convert temp to degrees Farenheit
+    //if( scale == TFMP_FAREN)  temp = uint8_t( temp * 9 / 5) + 32;
+
+    return true;
 }
 
 // Pass back data using default I2C address.
-bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp)
+bool TFMPI2C::getData( uint16_t &dist, uint16_t &flux, uint16_t &temp)
 {
   return getData( dist, flux, temp, TFMP_DEFAULT_ADDRESS);
 }
 
 // Pass back only the distance data using derfault I2C address.
-bool TFMPI2C::getData( int16_t &dist)
+bool TFMPI2C::getData( uint16_t &dist)
 {
-  static int16_t flux, temp;
+  static uint16_t flux, temp;
   return getData( dist, flux, temp, TFMP_DEFAULT_ADDRESS);
 }
 //
 // - - - - - - End of Get a Frame of Data  - - - - - - - - - -
 
 
-// = = = = =  SEND A COMMAND TO THE DEVICE  = = = = = = = = = =0
+// = = = = =  SEND A COMMAND TO THE DEVICE  = = = = = = = = = =
 //
 // Create a proper command byte array, send the command,
 // get a response, and return the status.
@@ -199,10 +183,20 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     // chkSum variable declared in 'TFMPI2C.h'
     chkSum = 0;
     // Add together all bytes but the last...
-    for( uint8_t i = 0; i < ( replyLen - 1); i++) chkSum += reply[ i];
+    for( uint8_t i = 0; i < (cmndLen - 1); i++) chkSum += cmndData[ i];
     // and save it as the last byte of command data.
     cmndData[ cmndLen - 1] = uint8_t( chkSum);
 
+    if(DBUG_I2CFrames)
+    {
+      char st[100];
+      sprintf(st,"\nreq:[%02X %02X %02X %02X %02X %02X %02X %02X]", 
+                  cmndData[0],cmndData[1],cmndData[2],cmndData[3],
+                  cmndData[4],cmndData[5],cmndData[6],cmndData[7]);
+      Serial.println(st);
+    }
+
+    
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 2 - Send the command data array to the device
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -227,10 +221,12 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     // + + + + + + + + + + + + + + + + + + + + + + + + +
     // If no reply data expected, then go home. Otherwise,
     // wait for device to process the command and continue.
-    if( replyLen == 0) return true;
-        else delay( 500);
+    if( replyLen == 0) 
+      return true;
+    else 
+      delay( 500);
     // + + + + + + + + + + + + + + + + + + + + + + + + +
-
+    
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 3 - Get command reply data back from the device.
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -251,6 +247,14 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     
     Wire.write( 0);          // Put a zero in the xmit buffer.
     Wire.endTransmission();  // Send and Close the I2C interface.
+    if(DBUG_I2CFrames)
+    {
+      char st[100];
+      sprintf(st,"\nans:[%02X %02X %02X %02X %02X %02X %02X %02X]", 
+                  reply[0],reply[1],reply[2],reply[3],
+                  reply[4],reply[5],reply[6],reply[7]);
+      Serial.println(st);
+    }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 4 - Perform a checksum test.
@@ -307,68 +311,49 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - -    The following is for testing purposes    - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-// Called by either 'printFrame()' or 'printReply()'
-// Print status condition either 'READY' or error type
-void TFMPI2C::printStatus()
+// Print status condition 'READY' or error type
+// Print command reply and data-frame in hexidecimal
+void TFMPI2C::printErrorStatus()
 {
     Serial.print("Status: ");
-    if( status == TFMP_READY)          printf( "READY");
+    if( status == TFMP_READY)          Serial.write( "READY");
     else if( status == TFMP_SERIAL)    Serial.print( "SERIAL");
     else if( status == TFMP_HEADER)    Serial.print( "HEADER");
     else if( status == TFMP_CHECKSUM)  Serial.print( "CHECKSUM");
     else if( status == TFMP_TIMEOUT)   Serial.print( "TIMEOUT");
     else if( status == TFMP_PASS)      Serial.print( "PASS");
     else if( status == TFMP_FAIL)      Serial.print( "FAIL");
-    else if( status == TFMP_I2CREAD)   Serial.print( "I2C-READ");
-    else if( status == TFMP_I2CWRITE)  Serial.print( "I2C-WRITE");
-    else if( status == TFMP_I2CLENGTH) Serial.print( "I2C-LENGTH");
-    else if( status == TFMP_WEAK)      Serial.print( "Signal weak");
-    else if( status == TFMP_STRONG)    Serial.print( "Signal saturation");
-    else if( status == TFMP_FLOOD)     Serial.print( "Ambient light saturation");
+    else if( status == TFMP_I2CREAD)   Serial.print( "I2CREAD");
+    else if( status == TFMP_I2CWRITE)  Serial.print( "I2CWRITE");
+    else if( status == TFMP_I2CLENGTH) Serial.print( "I2CLENGTH");
     else Serial.print( "OTHER");
     Serial.println();
-}
-
-// Print error type and HEX values
-// of each byte in the data frame
-void TFMPI2C::printFrame()
-{
-    printStatus();
-    // Print the Hex value of each byte of data
-    Serial.print("Data:");
-    for( uint8_t i = 0; i < TFMP_FRAME_SIZE; i++)
-    {
-      Serial.print(" ");
-      Serial.print( frame[ i] < 16 ? "0" : "");
-      Serial.print( frame[ i], HEX);
-    }
-    Serial.println();
-}
-
-// Print error type and HEX values of
-// each byte in the command response frame
-void TFMPI2C::printReply()
-{
-    printStatus();
-    // Print the Hex value of each byte
+    
+    Serial.print("Reply:");
     for( uint8_t i = 0; i < TFMP_REPLY_SIZE; i++)
     {
       Serial.print(" ");
-      Serial.print( frame[ i] < 16 ? "0" : "");
+      Serial.print( reply[ i], HEX);
+    }
+    Serial.println();
+    
+    Serial.print("Data:");
+    for( uint8_t i = 0; i < TFMP_REPLY_SIZE; i++)
+    {
+      Serial.print(" ");
       Serial.print( frame[ i], HEX);
     }
     Serial.println();
 }
 
-// This is Prompt for Y/N response
+// Prompt for Y/N response
 bool TFMPI2C::getResponse()
 {
     // One second timer if serial read never occurs
     uint32_t serialTimeout = millis() + 5000;
     static char charIn;
-    printf("Y/N? ");
+    Serial.write("Y/N? ");
     while( Serial.available() || ( millis() <  serialTimeout))
     {
       charIn = Serial.read();

@@ -1,6 +1,7 @@
 /* File Name: TFMPI2C_example.ino
  * Inception: 29JAN2019
- * Last work: 20JUN2020
+ * Last work: 22JUL2020 - added delay after reset command
+ *                        changed frame rate to 20Hz
  * Developer: Bud Ryerson
  *
  * Description: This Arduino sketch is used to test the Benewake
@@ -88,6 +89,7 @@ void setup()
         printf( "passed.\r\n");
     }
     else tfmP.printReply();
+    delay(500);  //  Wait for device to complete Reset
     // - - Display the firmware version - - - - - - - - -
     printf( "Firmware version: ");
     if( tfmP.sendCommand( OBTAIN_FIRMWARE_VERSION, 0))
@@ -97,11 +99,11 @@ void setup()
         printf( "%1u\r\n", tfmP.version[ 2]);
     }
     else tfmP.printReply();
-    // - - Set the data frame-rate to 250 - - - - - - - - -
+    // - - Set the data frame-rate to 20 - - - - - - - - -
     printf( "Data-Frame rate: ");
-    if( tfmP.sendCommand( SET_FRAME_RATE, FRAME_250))
+    if( tfmP.sendCommand( SET_FRAME_RATE, FRAME_20))
     {
-        printf( "%2uHz.\r\n", FRAME_250);
+        printf( "%2uHz.\r\n", FRAME_20);
     }
     else tfmP.printReply();
     // - - - - - - - - - - - - - - - - - - - - - - - -

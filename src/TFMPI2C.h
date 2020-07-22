@@ -123,6 +123,8 @@
 #define    DISABLE_OUTPUT             0x01070505   //           "
 #define    SET_I2C_ADDRESS            0x100B0505   //           "
 
+#define    SET_UART_MODE              0x000A0500   // returns no reply data
+#define    SET_I2C_MODE               0x010A0500   //           "
 
 #define    SYSTEM_RESET               0x00020405   // echo and pass(0)/fail(1) byte
 #define    RESTORE_FACTORY_SETTINGS   0x00100405   //           "
@@ -193,7 +195,7 @@
 //#define TFMP_HILO          1  // IO output: near high and far low
 //#define TFMP_LOHI          2  // IO output: near low and far high
 
-
+#define DBUG_I2CFrames 0
 // Object Class Definitions
 class TFMPI2C
 {

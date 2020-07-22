@@ -77,7 +77,7 @@ bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr
     // The device can also return data in millimeters, but its
     // resolution is only 5mm (o.5cm) and its accuracy is ±5cm.
     if( sendCommand( I2C_FORMAT_CM, 0, addr) != true) return false;
-
+    delay(5);
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 1 - Get data from the device.
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -115,7 +115,14 @@ bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr
       status = TFMP_CHECKSUM;  // then set error...
       return false;            // and return "false."
     }
-
+    if(DBUG_I2CFrames)
+    {
+      char st[100];
+      sprintf(st,"\ndat:[%02X %02X %02X %02X %02X %02X %02X %02X %02X]", 
+                  frame[0],frame[1],frame[2],frame[3],
+                  frame[4],frame[5],frame[6],frame[7],frame[8]);
+      Serial.println(st);
+    }
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 3 - Interpret the frame data
     //          and if okay, then go home
@@ -199,10 +206,20 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     // chkSum variable declared in 'TFMPI2C.h'
     chkSum = 0;
     // Add together all bytes but the last...
-    for( uint8_t i = 0; i < ( replyLen - 1); i++) chkSum += reply[ i];
+    for( uint8_t i = 0; i < (cmndLen - 1); i++) chkSum += cmndData[ i];
     // and save it as the last byte of command data.
     cmndData[ cmndLen - 1] = uint8_t( chkSum);
 
+    if(DBUG_I2CFrames)
+    {
+      char st[100];
+      sprintf(st,"\nreq:[%02X %02X %02X %02X %02X %02X %02X %02X]", 
+                  cmndData[0],cmndData[1],cmndData[2],cmndData[3],
+                  cmndData[4],cmndData[5],cmndData[6],cmndData[7]);
+      Serial.println(st);
+    }
+
+    
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 2 - Send the command data array to the device
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -251,6 +268,14 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     
     Wire.write( 0);          // Put a zero in the xmit buffer.
     Wire.endTransmission();  // Send and Close the I2C interface.
+    if(DBUG_I2CFrames)
+    {
+      char st[100];
+      sprintf(st,"\nans:[%02X %02X %02X %02X %02X %02X %02X %02X]", 
+                  reply[0],reply[1],reply[2],reply[3],
+                  reply[4],reply[5],reply[6],reply[7]);
+      Serial.println(st);
+    }
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 4 - Perform a checksum test.

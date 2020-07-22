@@ -2,6 +2,7 @@
  * Developer: Bud Ryerson
  * Date:      17JUN2020
  * Version:   1.4.0
+ *            1.4.1 - 22JUL20
  * Described: Arduino Library for the Benewake TFMini-Plus Lidar sensor
  *            configured for the I2C interface
  *

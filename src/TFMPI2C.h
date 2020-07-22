@@ -1,8 +1,7 @@
 /* File Name: TFMPI2C.h
  * Developer: Bud Ryerson
- * Date:      17JUN2020
- * Version:   1.4.0
- *            1.4.1 - 22JUL20
+ * Date:      22JUL2020
+ * Version:   1.4.1
  * Described: Arduino Library for the Benewake TFMini-Plus Lidar sensor
  *            configured for the I2C interface
  *
@@ -59,6 +58,7 @@
         -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -               
        and added appropriate error status codes
    3. Changed defined command SET_UART_MODE to SET_SERIAL_MODE
+ * v.1.4.1 - 22JUL20 - Fixed bugs in TFMPI2C.cpp
  */
 
 #ifndef TFMPI2C_H       // Guard to compile only once

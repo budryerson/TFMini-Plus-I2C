@@ -7,11 +7,13 @@ In the example code, `printStatus()` or `printErrorStatus()` has been replaced w
 
 ### Arduino library for the Benewake TFMini-Plus using I2C communication interface
 
-The **TFMini-S** is said to be compatible with the **TFMini-Plus** and therefore able to use this library.  However, this library is *not compatible* with the **TFMini**, which is a different product with its own command and data structure.
+The **TFMini-S** is largely compatible with the **TFMini-Plus** and therefore able to use this library. One difference is that the **TFMini-Plus** switches immediately upon command to change communication mode (`SET_I2C_MODE`, `SET_SERIAL_MODE`), whereas the **TFMini-S** requires a following SAVE_SETTING command. This library is _not compatible_ with the **TFMini**, which is an entirely different product with its own command and data structure.
 
-Since hardware version 1.3.5 and firmware version 1.9.0, the TFMini-Plus can be configured to use the **I2C** (two-wire) protocol for its communication interface.  The command to configure the device for **I2C** communication must be sent using the **UART** interface.  Therefore, configuration should be made prior to the device's service installation either by using the TFMini-Plus library or by using a serial GUI test application available from the manufacturer.  Thereafter, this libarary can be used for all further communication with the device.
+Since hardware version 1.3.5 and firmware version 1.9.0, the TFMini-Plus can be configured to use the **I2C** (two-wire) protocol for its communication interface.  The command to configure the device for **I2C** communication must be sent using the **UART** interface.  Therefore, configuration should be made prior to the device's service installation either by using the **TFMini-Plus** library or by using a serial GUI test application available from the manufacturer.  Thereafter, this libarary can be used for all further communication with the device.
 
 This library calls the Arduino standard I2C/Two-Wire Library.
+
+Additionaly, this device can be configured to output a binary (high/low) voltage level to signal that a detected object is within or beyond a user-defined range.  Please see the manufacturer's Product Manual in 'documents' for more information about the **I/O** output mode.  The **I/O** modes are not supported in this library.  Please do not attempt to use any **I/O** commands that may be defined in this library's header file.
 <hr />
 
 ### Arduino Library Commands
@@ -19,8 +21,8 @@ This library calls the Arduino standard I2C/Two-Wire Library.
 The `getData( dist, flux, temp, addr)` function passes back three, signed, 16-bit measurement data values and sends an optional, unsigned, 8-bit address.  If the default device address is used, the optional `addr` value may be omitted.  Otherwise, a correct `addr` value always must be sent.  If the function completes without error, it returns 'True' and sets the public, one-byte 'status' code to zero.  Otherwise, it returns 'False' and sets the 'status' code to a library defined error code.
 
 Measurement data values are passed-back in three, 16-bit, signed integer variables:
-<br />&nbsp;&nbsp;&#9679;&nbsp; `dist` Distance to target in centimeters. Range: 0 - 1200
-<br />&nbsp;&nbsp;&#9679;&nbsp; `flux` Strength or quality of returned signal in arbitrary units. Range: 0 - 32767
+<br />&nbsp;&nbsp;&#9679;&nbsp; `dist` Distance to target in centimeters/millimeters. Range: 0 - 1200/12000
+<br />&nbsp;&nbsp;&#9679;&nbsp; `flux` Strength or quality of returned signal in arbitrary units. Range: -1, 0 - 32767
 <br />&nbsp;&nbsp;&#9679;&nbsp; `temp` Temperature of the device in code. Range: -25°C to 125°C
 
 For further convenience and simplicity, a `getData( dist)` function is included. This function passes back data only to the `dist` variable and requires use of the default I2C address.

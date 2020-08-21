@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C.h
  * Developer: Bud Ryerson
- * Date:      22JUL2020
- * Version:   1.4.1
+ * Date:      21 AUG 2020
+ * Version:   1.4.3
  * Described: Arduino Library for the Benewake TFMini-Plus Lidar sensor
  *            configured for the I2C interface
  *
@@ -11,7 +11,7 @@
  *    100Hz  - device data frame-rate
  *    Centimeter - distance measurement format
  *    Celsius - temperature measurement scale
- * 
+ *
  *  There are only two important functions: 'getData' and 'sendCommand'
  *
  *  NOTE: By default the I2C device address is set to 0x10. If you need
@@ -55,16 +55,25 @@
             -1     Other value   Strength ≤ 100
             -2     -1            Signal strength saturation
             -4     Other value   Ambient light saturation
-        -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -               
+        -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
        and added appropriate error status codes
    3. Changed defined command SET_UART_MODE to SET_SERIAL_MODE
  * v.1.4.1 - 22JUL20 - Fixed bugs in TFMPI2C.cpp
+ * v.1.4.2 - 09AUG20- Added `true` parameter to `Wire.endTransmission()`
+             and added explicit I2C addrees to short getData()
+             functions in TFMPI2C.cpp.
+ * v.1.4.3 - 21AUG20 - Deleted all 'Wire.endTransmission()` functions
+             after a 'Wire.requestFrom(true)' in TFMPI2C.cpp.
+
  */
 
 #ifndef TFMPI2C_H       // Guard to compile only once
 #define TFMPI2C_H
 
 #include <Arduino.h>    // Always include this. It's important.
+
+#define TFMP_DEFAULT_ADDRESS   0x10   // default I2C slave address
+                                      // as hexidecimal integer
 
 // Buffer size definitions
 #define TFMP_FRAME_SIZE         9   // Size of data frame = 9 bytes
@@ -76,8 +85,6 @@
 #define MAX_BYTES_BEFORE_HEADER  20   // getData() sets HEADER error
 #define MAX_ATTEMPTS_TO_MEASURE  20
 
-#define TFMP_DEFAULT_ADDRESS   0x10   // default I2C slave address
-                                      // as hexidecimal integer
 // Error Status Condition definitions
 #define TFMP_READY           0  // no error
 #define TFMP_SERIAL          1  // serial timeout
@@ -89,7 +96,7 @@
 #define TFMP_I2CREAD         7
 #define TFMP_I2CWRITE        8
 #define TFMP_I2CLENGTH       9
-#define TFMP_WEAK           10  // Signal Strength ≤ 100             
+#define TFMP_WEAK           10  // Signal Strength ≤ 100
 #define TFMP_STRONG         11  // Signal Strength saturation
 #define TFMP_FLOOD          12  // Ambient Light saturation
 #define TFMP_MEASURE        13
@@ -133,7 +140,7 @@
 #define    I2C_FORMAT_MM              0x06000500   //           "
 #define    TRIGGER_DETECTION          0x00040400   // return 9 byte serial data
                                                    // frame rate set to zero
-                                                   
+
 // Command Parameter Definitions
 // (generally not used in I2C Communications Mode)
 #define    BAUD_9600          0x002580   // UART serial baud rate
@@ -208,19 +215,27 @@ class TFMPI2C
     uint8_t status;        // system error status: READY = 0
 
     // Get device data-frame and pass back three values
+    // using explicit I2C address
     bool getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr);
+    // Short version using explicit I2C address
+    bool getData( int16_t &dist, uint8_t addr);
+
+    // Get device data-frame and pass back three values
+    // using implied default I2C address
     bool getData( int16_t &dist, int16_t &flux, int16_t &temp);
-    // Short version implies default I2C address
+    // Short version implied default I2C address
     bool getData( int16_t &dist);
 
     // Build and send a command, and check response
     bool sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr);
     bool sendCommand( uint32_t cmnd, uint32_t param);
 
-    //  For testing purposes: print frame or reply data and status
-    //  as a string of HEX characters
+    //  For testing purposes:
+    //  Print status and frame data as string of HEX characters
     void printFrame();
-    void printReply();    
+    //  Print status and command reply data in HEX
+    void printReply();
+    //  Looking for Y/N keyboard input
     bool getResponse();
 
   private:
@@ -229,7 +244,7 @@ class TFMPI2C
 
     uint16_t chkSum;     // to calculate the check sum byte.
     uint8_t replyLen;    // reply data length
-    
+
     void printStatus();
 };
 

@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C.cpp
  * Developer: Bud Ryerson
- * Date:      22 JUL 2020
- * Version:   1.4.1
+ * Date:      21 AUG 2020
+ * Version:   1.4.3
  * Described: Arduino Library for the Benewake TFMini-Plus Lidar sensor
  *            configured for the I2C interface
  *
@@ -33,8 +33,9 @@
  *  a public, one-byte 'status' code to zero.  Otherwise. it returns
  *  'False' and sets the 'status' code to a library defined error code.
  *  
- *  NOTE: This library also includes a simple 'getData( dist)' function that
- *  passes back distance data only. It assumes use of the default I2C address.
+ *  NOTE: This library also includes a two simple 'getData( dist)' functions
+ *  that pass back distance data only. One assumes the default I2C address
+ *  and the other requires an explicit address.
  *
  * 'sendCommand( cmnd, param, addr)'
  *  The function sends an unsigned 32-bit command and an unsigned 32-bit
@@ -59,6 +60,11 @@
  * v.1.4.1 - 22JUL20 - Fixed bug in sendCommand() checksum calculation
            - Changed two printf()s to Serial.print()s
 	          - Fixed printReply() to show data from 'reply' rather than 'frame'
+ * v.1.4.2 - 09AUG20- Added `true` parameter to `Wire.endTransmission()`
+             and added explicit I2C addrees to short getData()
+             functions in TFMPI2C.cpp.
+ * v.1.4.3 - 21AUG20 - Deleted all 'Wire.endTransmission()` functions
+             after a 'Wire.requestFrom(true)' in TFMPI2C.cpp.
  */
 
 #include <TFMPI2C.h>       //  TFMini-Plus I2C library header
@@ -85,8 +91,8 @@ bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr
     // Step 1 - Get data from the device.
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Request one data-frame from the slave device address
-    // and keep the I2C interface open.
-    Wire.requestFrom( (int)addr, TFMP_FRAME_SIZE, 1);
+    // and close the I2C interface.
+    Wire.requestFrom( (int)addr, TFMP_FRAME_SIZE, true);
 
     memset( frame, 0, sizeof( frame));     // Clear the data-frame buffer.
     for( uint8_t i = 0; i < TFMP_FRAME_SIZE; i++)
@@ -94,16 +100,10 @@ bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr
       if( Wire.peek() == -1)     // If there is no next byte...
       {
         status = TFMP_I2CREAD;   // then set error...
-        Wire.write( 0);          // Put a zero in the xmit buffer.
-        Wire.endTransmission();  // Send and Close the I2C interface.
         return false;            // and return "false."
       }
-      // Wire.read() returns a signed integer type
-      // and advances the rxBufferIndex.
       else frame[ i] = uint8_t( Wire.read());
     }
-    Wire.write( 0);          // Put a zero in the xmit buffer.
-    Wire.endTransmission();  // Send and Close the I2C interface.
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 2 - Perform a checksum test.
@@ -152,13 +152,21 @@ bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp)
   return getData( dist, flux, temp, TFMP_DEFAULT_ADDRESS);
 }
 
-// Pass back only the distance data using derfault I2C address.
+// Pass back only distance data using given I2C address.
+bool TFMPI2C::getData( int16_t &dist, uint8_t addr)
+{
+  static int16_t flux, temp;
+  return getData( dist, flux, temp, addr);
+}
+
+// Pass back only distance data using default I2C address.
 bool TFMPI2C::getData( int16_t &dist)
 {
   static int16_t flux, temp;
   return getData( dist, flux, temp, TFMP_DEFAULT_ADDRESS);
 }
 //
+
 // - - - - - - End of Get a Frame of Data  - - - - - - - - - -
 
 
@@ -216,12 +224,12 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     {
         status = TFMP_I2CLENGTH;  // then set satus code...
         Wire.write( 0);           // Put a zero in the xmit buffer.
-        Wire.endTransmission();   // Send and Close the I2C interface.
+        Wire.endTransmission( true);   // Send and Close the I2C interface.
         return false;             // and return "false."
     }
 
     // Transmit the bytes and a stop message to release the I2C bus.
-    if( Wire.endTransmission() != 0)  // If write error...
+    if( Wire.endTransmission( true) != 0)  // If write error...
     {
         status = TFMP_I2CWRITE;       // then set satus code...
         return false;                 // and return "false."
@@ -243,8 +251,8 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     if( cmnd == SET_I2C_ADDRESS) addr = uint8_t(param);
 
     // Request reply data from the device and
-    // keep the I2C interface open.
-    Wire.requestFrom( (int)addr, (int)replyLen, (int)1);
+    // close the I2C interface.
+    Wire.requestFrom( (int)addr, (int)replyLen, true);
 
     memset( reply, 0, sizeof( reply));   // Clear the reply data buffer.
     for( uint8_t i = 0; i < replyLen; i++)
@@ -252,9 +260,6 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
       reply[ i] = (uint8_t)Wire.read();
     }
     
-    Wire.write( 0);          // Put a zero in the xmit buffer.
-    Wire.endTransmission();  // Send and Close the I2C interface.
-
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 4 - Perform a checksum test.
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1,6 +1,6 @@
 #######################################
 # Syntax Coloring Map for TFMPI2C
-# Date: 20200701
+# Date: 20200821
 # Note: Separate terms with TABs
 #######################################
 
@@ -18,7 +18,6 @@ version	KEYWORD1
 
 getData	KEYWORD2
 sendCommand	KEYWORD2
-printStatus	KEYWORD2
 printFrame	KEYWORD2
 printReply	KEYWORD2
 getResponse	KEYWORD2

@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C_changeI2C.ino 
  * Developer: Bud Ryerson
  * Inception: 16 FEB 2020
- * Last work: 20JUN2020
+ * Last work: 03 SEP 2020
  *
  * Description:
  *  Run an I2C address search.
@@ -16,7 +16,7 @@
                       // devices such as the Galileo. Download from:
                       // https://github.com/spaniakos/AES/blob/master/printf.h
 
-#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.4.1
+#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.5.0
 TFMPI2C tfmP;         // Create a TFMini-Plus I2C object
 
 // Declare variables

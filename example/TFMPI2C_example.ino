@@ -1,7 +1,7 @@
-/* File Name: TFMPI2C_example.ino
- * Inception: 29JAN2019
- * Last work: 22JUL2020 - added delay after reset command
- *                        changed frame rate to 20Hz
+
+6+/* File Name: TFMPI2C_example.ino
+ * Inception: 29 JAN 2019
+ * Last work: 03 SEP 2020
  * Developer: Bud Ryerson
  *
  * Description: This Arduino sketch is used to test the Benewake
@@ -16,11 +16,11 @@
  *    Centimeter - distance measurement format
  *    Celsius - temperature measurement scale
  *
- * The TFMini-Plus is switched to I2C mode from the default UART
- * (serial) interface mode by a command from the TFMPlus library
- * or the factory supplied GUI.  The device will remain in I2C mode
+ * The TFMini-Plus is switched from the default UART (serial)
+ * interface mode to I2C Mode by a command from the TFMPlus library
+ * or the factory supplied GUI.  The device will remain in I2C Mode
  * regardless of any reset commands or power cycling until the I2C
- * command 'SET_UART_MODE' is sent.
+ * command 'SET_SERIAL_MODE' is sent.
  *
  * NOTE: If your your Arduino is capable of operating at "Fast" I2C
  * clock speeds (400KHz), then remove comment slashes from line #75.
@@ -33,11 +33,11 @@
  *  'addr' value at the end of every call to 'getData()' or 'sendCommand()'.
  *
  *  'getData( dist, flux, temp, addr)' passes back measurement values in
- *  three unsigned, 16-bit variables:
+ *  three signed, 16-bit variables:
  *     dist - distance to target in centimeters: 10cm - 1200cm
  *     flux - strength, voltage or quality of returned signal
- *            in arbitrary units: 0 - 65535Z
- *     temp - chip temperature in degrees Celsius: -25°C to 125°C
+ *            in arbitrary units: -1, 0 - 32767
+ *     temp - chip temperature in Celsius: -25°C to 125°C
  *  and sends...
  *     addr - an optional unsigned 8-bit address value.
  *
@@ -67,7 +67,7 @@
                       // devices such as the Galileo. Download from:
                       // https://github.com/spaniakos/AES/blob/master/printf.h
 
-#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.4.1
+#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.5.0
 TFMPI2C tfmP;         // Create a TFMini-Plus I2C object
 
 void setup()
@@ -79,27 +79,26 @@ void setup()
     printf_begin();          // Initialize printf library.
     delay(20);
 
-    printf( "\r\nTFMPlus I2C Library Example\r\n");  // say 'hello'
+    printf( "\r\nTFMPlus I2C Library 1.5.0\r\n");  // say 'hello'
 
     // Send some example commands to the TFMini-Plus
     // - - Perform a system reset - - - - - - - - - - -
     printf( "System reset: ");
-    if( tfmP.sendCommand( SYSTEM_RESET, 0))
+    if( tfmP.sendCommand( SOFT_RESET, 0))
     {
         printf( "passed.\r\n");
     }
     else tfmP.printReply();
-    delay(500);  //  Wait for device to complete Reset
     // - - Display the firmware version - - - - - - - - -
     printf( "Firmware version: ");
-    if( tfmP.sendCommand( OBTAIN_FIRMWARE_VERSION, 0))
+    if( tfmP.sendCommand( GET_FIRMWARE_VERSION, 0))
     {
         printf( "%1u.", tfmP.version[ 0]); // print three single numbers
         printf( "%1u.", tfmP.version[ 1]); // each separated by a dot
         printf( "%1u\r\n", tfmP.version[ 2]);
     }
     else tfmP.printReply();
-    // - - Set the data frame-rate to 20 - - - - - - - - -
+    // - - Set the data frame-rate to 250 - - - - - - - - -
     printf( "Data-Frame rate: ");
     if( tfmP.sendCommand( SET_FRAME_RATE, FRAME_20))
     {
@@ -107,7 +106,21 @@ void setup()
     }
     else tfmP.printReply();
     // - - - - - - - - - - - - - - - - - - - - - - - -
-
+/*    // - - Set Serial Mode - - - - - - - - - - -
+    printf( "Set Serial Mode: ");
+    if( tfmP.sendCommand( SET_SERIAL_MODE, 0))
+    {
+        printf( "passed.\r\n");
+    }
+    else tfmP.printReply();
+    // - - Set Serial Mode - - - - - - - - - - -
+    printf( "Save Settring: ");
+    if( tfmP.sendCommand( SAVE_SETTINGS, 0))
+    {
+        printf( "passed.\r\n");
+    }
+    else tfmP.printReply();
+*/
     delay(500);            // And wait for half a second.
 }
 
@@ -124,7 +137,7 @@ void loop()
     {
         printf( "Dist:%04icm ", tfDist);   // display distance,
         printf( "Flux:%05i ",   tfFlux);   // display signal strength/quality,
-        printf( "Temp:%2i\°C",  tfTemp);   // display temperature,
+        printf( "Temp:%2i%s",  tfTemp, "°C" );   // display temperature,
         printf( "\r\n");                   // end-of-line.
     }
     else tfmP.printFrame(); // Otherwise, display error and data frame

@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C.cpp
  * Developer: Bud Ryerson
- * Date:      21 AUG 2020
- * Version:   1.4.3
+ * Date:      03 SEP 2020
+ * Version:   1.5.0
  * Described: Arduino Library for the Benewake TFMini-Plus Lidar sensor
  *            configured for the I2C interface
  *
@@ -20,10 +20,10 @@
  *  'addr' value at the end of every call to 'getData()' or 'sendCommand()'.
  *
  *  'getData( dist, flux, temp, addr)' passes back measurement values in
- *  three unsigned, 16-bit variables:
+ *  three signed, 16-bit variables:
  *     dist - distance to target in centimeters: 10cm - 1200cm
  *     flux - strength, voltage or quality of returned signal
- *            in arbitrary units: 0 - 65535Z
+ *            in arbitrary units: -1, 0 - 32767
  *     temp - chip temperature in degrees Celsius: -25°C to 125°C
  *  and sends;
  *     addr - optional unsigned 8-bit address value.
@@ -48,24 +48,25 @@
  *  commands. Parameters can be entered directly (0x10, 250, etc.) or chosen
  *  from the library's lists of defined parameters.
  
- * v.1.4.0 - 15JUN20 - Changed all data variables from unsigned
+ * v1.4.0 - 15JUN20 - Changed all data variables from unsigned
              to signed integers.  Defined abnormal data codes
              as per TFMini-S Producut Manual
-           -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+          -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
             Dist | Strength    |  Comment
              -1    Other value   Strength ≤ 100
              -2    -1            Signal strength saturation
              -4    Other value   Ambient light saturation
            -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
- * v.1.4.1 - 22JUL20 - Fixed bug in sendCommand() checksum calculation
-           - Changed two printf()s to Serial.print()s
-	          - Fixed printReply() to show data from 'reply' rather than 'frame'
- * v.1.4.2 - 09AUG20- Added `true` parameter to `Wire.endTransmission()`
+ * v1.4.1 - 22JUL20 - Fixed bug in sendCommand() checksum calculation
+          - Changed two printf()s to Serial.print()s
+	        - Fixed printReply() to show data from 'reply' rather than 'frame'
+ * v1.4.2 - 09AUG20- Added `true` parameter to `Wire.endTransmission()`
              and added explicit I2C addrees to short getData()
              functions in TFMPI2C.cpp.
- * v.1.4.3 - 21AUG20 - Deleted all 'Wire.endTransmission()` functions
+ * v1.4.3 - 21AUG20 - Deleted all 'Wire.endTransmission()` functions
              after a 'Wire.requestFrom(true)' in TFMPI2C.cpp.
- */
+ * v1.5.0 - 03SEP20 - Added recoverI2CBus() function to free locked I2C bus
+*/
 
 #include <TFMPI2C.h>       //  TFMini-Plus I2C library header
 #include <Wire.h>          //  Arduino I2C/Two-Wire Library
@@ -78,6 +79,7 @@ TFMPI2C::~TFMPI2C(){}
 //
 bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr)
 {
+    // 'frame' data array is declared in TFMPI2C.h
     status = TFMP_READY;    // clear status of any error condition
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -166,7 +168,6 @@ bool TFMPI2C::getData( int16_t &dist)
   return getData( dist, flux, temp, TFMP_DEFAULT_ADDRESS);
 }
 //
-
 // - - - - - - End of Get a Frame of Data  - - - - - - - - - -
 
 
@@ -179,11 +180,11 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 1 - Build the command data to send to the device
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    static uint8_t cmndLen;             // Length of command
-    static uint8_t replyLen;            // Length of command reply data
-    static uint8_t cmndData[ 8];        // 8 byte send command array
+    // 'reply' data array, 'replyLen', 'cmndLen' and 'cmndData'
+    // variables are all declared in TFMPI2C.h
 
-    memset( cmndData, 0, 8);            // Clear the send command array.
+    // Clear the send command data array.
+    memset( cmndData, 0, sizeof( cmndData));
     memcpy( &cmndData[ 0], &cmnd, 4);   // Copy 4 bytes of data: reply length,
                                         // command length, command number and
                                         // a one byte parameter, all encoded as
@@ -277,7 +278,7 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Step 5 - Interpret different command responses.
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if( cmnd == OBTAIN_FIRMWARE_VERSION)
+    if( cmnd == GET_FIRMWARE_VERSION)
     {
         version[ 0] = reply[5];  // set firmware version.
         version[ 1] = reply[4];
@@ -285,8 +286,8 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
     }
     else
     {
-        if( cmnd == SYSTEM_RESET ||
-            cmnd == RESTORE_FACTORY_SETTINGS ||
+        if( cmnd == SOFT_RESET ||
+            cmnd == HARD_RESET ||
             cmnd == SAVE_SETTINGS )
         {
             if( reply[ 3] == 1)      // If PASS/FAIL byte not zero ...
@@ -308,11 +309,55 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param)
 {
   return sendCommand( cmnd, param, TFMP_DEFAULT_ADDRESS);
 }
-
 //
 // - - - - - - -  End of Send a Command  - - - - - - - - - - - -
 
 
+// = = = = =  RECOVER I2C BUS  = = = = = = = = = =
+// An I2C device that quits unexpectedly can leave the I2C bus hung,
+// waiting for a transfer to finish.  This function bypasses the Wire
+// library and sends 8 phony clock cycles, a NAK, and a STOP signal to
+// the SDA and SCL pin numbers.  This flushes any I2C data transfer
+// that had been in progress.  It concludes by calling `Wire.begin()`.
+//
+void TFMPI2C::recoverI2CBus( uint8_t dataPin, uint8_t clockPin)
+{
+    Serial.println("Starting I2C bus recovery");
+    delay( 1000);
+
+    //try i2c bus recovery at 100kHz = 5uS high, 5uS low
+    pinMode( dataPin, OUTPUT); //keeping SDA high during recovery
+    digitalWrite( dataPin, HIGH);
+
+    pinMode( clockPin, OUTPUT);
+    for (int i = 0; i < 10; i++)   //9nth cycle acts as NACK
+    {
+      digitalWrite( clockPin, HIGH);
+      delayMicroseconds( 5);
+      digitalWrite( clockPin, LOW);
+      delayMicroseconds( 5);
+    }
+
+    //a STOP signal (SDA from low to high while CLK is high)
+    digitalWrite( dataPin, LOW);
+    delayMicroseconds( 5);
+    digitalWrite( clockPin, HIGH);
+    delayMicroseconds( 2);
+    digitalWrite( dataPin, HIGH);
+    delayMicroseconds( 2);
+    //bus status is now : FREE
+
+    Serial.println("bus recovery done, return in 2 secs");
+    //return to power up mode
+    pinMode( dataPin, INPUT);
+    pinMode( clockPin, INPUT);
+    delay( 2000);
+    
+   // Wire.pins( dataPin, clockPin);
+    Wire.begin();
+}
+
+void thisTest(){};
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - -    The following is for testing purposes    - - - -
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -321,7 +366,7 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param)
 // Print status condition either 'READY' or error type
 void TFMPI2C::printStatus()
 {
-    Serial.print("Status: ");
+    Serial.print(" Status: ");
     if( status == TFMP_READY)          Serial.print( "READY");
     else if( status == TFMP_SERIAL)    Serial.print( "SERIAL");
     else if( status == TFMP_HEADER)    Serial.print( "HEADER");
@@ -336,7 +381,7 @@ void TFMPI2C::printStatus()
     else if( status == TFMP_STRONG)    Serial.print( "Signal saturation");
     else if( status == TFMP_FLOOD)     Serial.print( "Ambient light saturation");
     else Serial.print( "OTHER");
-    Serial.println();
+   // Serial.println();
 }
 
 // Print error type and HEX values
@@ -345,7 +390,7 @@ void TFMPI2C::printFrame()
 {
     printStatus();
     // Print the Hex value of each byte of data
-    Serial.print("Data:");
+    Serial.print(" Data:");
     for( uint8_t i = 0; i < TFMP_FRAME_SIZE; i++)
     {
       Serial.print(" ");
@@ -373,7 +418,8 @@ void TFMPI2C::printReply()
 // This is Prompt for Y/N response
 bool TFMPI2C::getResponse()
 {
-    // One second timer if serial read never occurs
+    // Five second timer, return 'false'
+    // if serial read never occurs
     uint32_t serialTimeout = millis() + 5000;
     static char charIn;
     Serial.print("Y/N? ");

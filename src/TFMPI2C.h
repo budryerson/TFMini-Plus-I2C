@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C.h
  * Developer: Bud Ryerson
- * Date:      21 AUG 2020
- * Version:   1.4.3
+ * Date:      03 SEP 2020
+ * Version:   1.5.0
  * Described: Arduino Library for the Benewake TFMini-Plus Lidar sensor
  *            configured for the I2C interface
  *
@@ -20,21 +20,22 @@
  *  'addr' value at the end of every call to 'getData()' or 'sendCommand()'.
  *
  *  'getData( dist, flux, temp, addr)' passes back measurement values in
- *  three unsigned, 16-bit variables:
+ *  three signed, 16-bit variables:
  *     dist - distance to target in centimeters: 10cm - 1200cm,
  *     flux - strength, voltage or quality of returned signal
- *            in arbitrary units: 0 - 65535,
+ *            in arbitrary units: -1, 0 - 32767
  *     temp - chip temperature: -25°C to 125°C,
  *  and sends;
  *     addr - optional unsigned 8-bit address value.
- *  - If default device address is used unchanged, the 'addr' value may
+ *  - If the default device address is used, the 'addr' value may
  *  be omitted.  Otherwise, a correct 'addr' value always must be sent.
  *  - If the function completes without error, it returns 'True' and sets
  *  a public, one-byte 'status' code to zero.  Otherwise. it returns
  *  'False' and sets the 'status' code to a library defined error code.
  *
- *  NOTE: This library also includes a simple 'getData( dist)' function that
- *  passes back distance data only. It assumes use of the default I2C address.
+ *  NOTE: This library also includes two functions that pass back distance data only.
+ *  One uses the default address 'getData( dist)' and the other allows an address
+ *  to be included 'getData( dist, addr)'.
  *
  * 'sendCommand( cmnd, param, addr)'
  *  The function sends an unsigned 32-bit command and an unsigned 32-bit
@@ -47,24 +48,24 @@
  *  commands. Parameters can be entered directly (0x10, 250, etc.) or chosen
  *  from the library's lists of defined parameters.
 
- * v.1.4.0 - 15JUN20
+ * v1.4.0 - 15JUN20
    1. Changed all data variables from unsigned to signed integers.
    2. Defined abnormal data codes as per TFMini-S Product Manual
-        -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+      -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
         Distance | Strength    |  Comment
             -1     Other value   Strength ≤ 100
             -2     -1            Signal strength saturation
             -4     Other value   Ambient light saturation
-        -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
-       and added appropriate error status codes
+      -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
+      and added appropriate error status codes
    3. Changed defined command SET_UART_MODE to SET_SERIAL_MODE
  * v.1.4.1 - 22JUL20 - Fixed bugs in TFMPI2C.cpp
  * v.1.4.2 - 09AUG20- Added `true` parameter to `Wire.endTransmission()`
              and added explicit I2C addrees to short getData()
              functions in TFMPI2C.cpp.
- * v.1.4.3 - 21AUG20 - Deleted all 'Wire.endTransmission()` functions
+ * v1.4.3 - 21AUG20 - Deleted all 'Wire.endTransmission()` functions
              after a 'Wire.requestFrom(true)' in TFMPI2C.cpp.
-
+ * v1.5.0 - Added recoverI2CBus() function to free locked I2C bus
  */
 
 #ifndef TFMPI2C_H       // Guard to compile only once
@@ -121,7 +122,7 @@
 #define    SET_SERIAL_MODE            0x000A0500   // return no reply data
 #define    SET_I2C_MODE               0x010A0500   //           "
 
-#define    OBTAIN_FIRMWARE_VERSION    0x00010407   // return 3 byte firmware version
+#define    GET_FIRMWARE_VERSION       0x00010407   // return 3 byte firmware version
 
 #define    SET_FRAME_RATE             0x00030606   // return an echo of the command
 #define    STANDARD_FORMAT_CM         0x01050505   //           "
@@ -132,8 +133,8 @@
 #define    SET_I2C_ADDRESS            0x100B0505   //           "
 
 
-#define    SYSTEM_RESET               0x00020405   // echo and pass(0)/fail(1) byte
-#define    RESTORE_FACTORY_SETTINGS   0x00100405   //           "
+#define    SOFT_RESET                 0x00020405   // echo and pass(0)/fail(1) byte
+#define    HARD_RESET                 0x00100405   //           "
 #define    SAVE_SETTINGS              0x00110405   //           "
 
 #define    I2C_FORMAT_CM              0x01000500   // return 9 byte data frame
@@ -167,11 +168,13 @@
 #define    FRAME_1000         0x03E8
 
 
-// - - Command defines not currently supported by this library - -
-// Pixhawk Communication Mode
+// *  *  *  This library does not support I/O Mode   *  *  *
+// *  *  *  *  *  *  or Pixhawk format   *  *  *  *  *  *  *
+//
+//  Pixhawk Communication Mode
 //#define    PIXHAWK_FORMAT           0x02050505   // returns a character string
-
-// I/O Communication Mode
+//
+//  I/O Communication Mode
 // Normally, device Pin 3 is either Serial transmit (TX) or I2C clock (SCL).
 // When 'I/O Mode' is set other than 'Standard,' Pin 3 becomes a simple HI/LO
 // (near/far) binary output.  Thereafter, only Pin 2, the Serial RX line, is
@@ -179,24 +182,8 @@
 //#define    SET_IO_MODE_STANDARD     0x003B0900   // 'Standard' is default data mode
 //#define    SET_IO_MODE_HILO         0x013B0900   // I/O, near high and far low
 //#define    SET_IO_MODE_LOHI         0x023B0900   // I/O, near low and far high
-// *  *  *  This library does not support the I/O Mode interface  *  *  *
-
-
-//- - Status defines not currently supported by this library - -
-// Communication Interface Mode
-//#define TFMP_UART          0  // communicate as asynchronous serial device
-//#define TFMP_I2C           1  // communicate as I2C slave device
-
-// Data return format
-//#define TFMP_CENTI         0  // range data in centimeters
-//#define TFMP_PXHWK         1  // Pixhawk data in meters as char string
-//#define TFMP_MILLI         6  // range data in millimeters
-
-// Temperature scale
-//#define TFMP_CELSI        'C'  // Celsius
-//#define TFMP_FAREN        'F'  // Farenheit
-
-// I/O Mode output format
+//
+//  I/O Mode output format
 //#define TFMP_DATA          0  // standard data output mode
 //#define TFMP_HILO          1  // IO output: near high and far low
 //#define TFMP_LOHI          2  // IO output: near low and far high
@@ -210,9 +197,9 @@ class TFMPI2C
     ~TFMPI2C();
 
     uint8_t version[ 3];   // three digit firmware version
+    uint8_t status;        // system error status: READY = 0
     uint8_t format;        // distance data format: CENTI or MILLI
     char scale;            // temperature scale: FAREN or CELSI
-    uint8_t status;        // system error status: READY = 0
 
     // Get device data-frame and pass back three values
     // using explicit I2C address
@@ -226,8 +213,9 @@ class TFMPI2C
     // Short version implied default I2C address
     bool getData( int16_t &dist);
 
-    // Build and send a command, and check response
+    // Send a command, a parameter and an address. Check response.
     bool sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr);
+    // Send a command and check response using default address.
     bool sendCommand( uint32_t cmnd, uint32_t param);
 
     //  For testing purposes:
@@ -237,15 +225,19 @@ class TFMPI2C
     void printReply();
     //  Looking for Y/N keyboard input
     bool getResponse();
+    //  Recover I2C bus
+    void recoverI2CBus( uint8_t dataPin, uint8_t clockPin);
 
   private:
     uint8_t frame[ TFMP_FRAME_SIZE + 1];
     uint8_t reply[ TFMP_REPLY_SIZE + 1];
 
-    uint16_t chkSum;     // to calculate the check sum byte.
-    uint8_t replyLen;    // reply data length
+    uint16_t chkSum;       // calculate the check sum byte.
+    uint8_t replyLen;      // store reply data length
+    uint8_t cmndLen;       // store command data length
+    uint8_t cmndData[ TFMP_COMMAND_MAX]; // store command data
 
-    void printStatus();
+    void printStatus();    
 };
 
 #endif

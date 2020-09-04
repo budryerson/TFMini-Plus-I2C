@@ -1,4 +1,3 @@
-
 /* File Name: TFMPI2C_example.ino
  * Inception: 29 JAN 2019
  * Last work: 03 SEP 2020
@@ -72,12 +71,13 @@ TFMPI2C tfmP;         // Create a TFMini-Plus I2C object
 
 void setup()
 {
-    Wire.begin();            // Initialize two-wire interface
-//    Wire.setClock( 400000);  // Set I2C bus speed to 'Fast' if
-                               // your Arduino supports 400KHz.
     Serial.begin( 115200);   // Initialize terminal serial port
     printf_begin();          // Initialize printf library.
     delay(20);
+
+    Wire.begin();            // Initialize two-wire interface
+//    Wire.setClock( 400000);  // Set I2C bus speed to 'Fast' if
+                               // your Arduino supports 400KHz.
 
     printf( "\r\nTFMPlus I2C Library 1.5.0\r\n");  // say 'hello'
 

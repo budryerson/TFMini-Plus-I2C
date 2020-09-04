@@ -1,16 +1,16 @@
 # TFMini-Plus-I2C
 ### PLEASE NOTE:
 
-An device that quits unexpectedly can leave the I2C bus in a hung state, waiting for a data transfer to finish.  With version 1.5.0 of this library, users can call `recoverI2CBus()` instead of `wire.begin()` in the `setup()` portion of a sketch.  See the library code file for more details.
+An device that quits unexpectedly can leave the I2C bus in a hung state, waiting for a data transfer to finish.  With version 1.5.0 of this library, users can call `recoverI2CBus()` instead of `Wire.begin()` in the `setup()` portion of a sketch.  See the library code file for more details.
 
 Also in this version, redundant code to close the I2C interface following a `requestFrom()` created problems for some users.  It was not needed and has been eliminated.
 
-Three commands names have changed inn this version:
-OBTAIN_FIRMWARE_VERSION  is now GET_FIRMWARE_VERSION
-RESTORE_FACTORY_SETTINGS is now HARD_RESET
-SYSTEM_RESET             is now SOFT_RESET
+Three commands names have changed in this version:
+<br />&nbsp;&nbsp;&#9679;&nbsp;`OBTAIN_FIRMWARE_VERSION`  is now `GET_FIRMWARE_VERSION`
+<br />&nbsp;&nbsp;&#9679;&nbsp;`RESTORE_FACTORY_SETTINGS` is now `HARD_RESET`
+<br />&nbsp;&nbsp;&#9679;&nbsp;`SYSTEM_RESET`             is now `SOFT_RESET`
 
-With version v1.4.0, data variables changed from unsigned to signed 16bit integers in order to support error codes returned in the `dist` (distance) and `flux` (signal strength) data. The only wokring error code at the moment is `-1` returned as `flux` data when the return signal is saturated.
+With version v.1.4.0, data variables changed from unsigned to signed 16bit integers in order to support error codes returned in the `dist` (distance) and `flux` (signal strength) data. The only wokring error code at the moment is `-1` returned as `flux` data when the return signal is saturated.
 
 In the example code, `printStatus()` or `printErrorStatus()` has been replaced with `printFrame()` in response to a failed `getData()` or `printReply()` if responding to `sendCommand()`.
 <hr />
@@ -30,19 +30,18 @@ The `getData( dist, flux, temp, addr)` function passes back three, signed, 16-bi
 
 Measurement data values are passed-back in three, 16-bit, signed integer variables:
 <br />&nbsp;&nbsp;&#9679;&nbsp; `dist` Distance to target in centimeters. Range: 0 - 1200
-<br />&nbsp;&nbsp;&#9679;&nbsp; `flux` Strength or quality of returned signal in arbitrary units. Range: 0 - 32767
-<br />&nbsp;&nbsp;&#9679;&nbsp; `temp` Temperature of the device in code. Range: -25°C to 125°C
+<br />&nbsp;&nbsp;&#9679;&nbsp; `flux` Strength or quality of return signal or error. Range: -1, 0 - 32767
+<br />&nbsp;&nbsp;&#9679;&nbsp; `temp` Temperature of device chip in code. Range: -25°C to 125°C
 
-For further convenience and simplicity, a `getData( dist)` function is included. This function passes back data only to the `dist` variable and requires use of the default I2C address.
+For further convenience and simplicity, the `getData( dist)` and `getData( dist, addr)` functions are included. These functions pass back distance data only and use either the default or an assigned I2C address.
 
 The `sendCommand( cmnd, param, addr)` function sends an unsigned, 32-bit command, an unsigned, 32-bit parameter and an optional, unsigned, 8-bit I2C address to the device.  A proper command (`cmnd`) must be chosen from the library's list of defined commands.  A parameter (`param`) can be entered directly (0x10, 250, etc.), or chosen from the Library's list of defined parameters.  If the default device address is used, the optional `addr` value may be omitted.  If the function completes without error, it returns 'True' and sets a public, one-byte 'status' code to zero.  Otherwise, it returns 'False' and sets the 'status' to a Library defined error code.
 
-**An erroneous command or parameter can block communication, and there is no external means of resetting the device to factory defaults.**
 <hr>
 
 In **I2C** mode, the TFMini-Plus functions as an I2C slave device.  The default address is `0x10` (16 decimal), but is user-programable by sending the `SET_I2C_ADDRESS` command and a parameter in the range of `1` to `127`.  The new address will take effect immediately and permanently without sending a `SAVE_SETTINGS` command.
 
-Although I2C address of the device can be changed while still in UART communication mode, the value of an I2C address cannot be tested in UART mode. For that, the devic must be in I2C communication mode and then you can scan the I2C bus for the presence of the device's addres. The `TFMPI2C_changeI2C.ino` sketch in the example folder includes a `scanAddr()` function.
+Although I2C address of the device can be changed while in UART communication mode, the value of an address cannot be tested in UART mode. For that, the device must be in I2C communication mode. Then you can scan the I2C bus for the presence of the device's addres. The `TFMPI2C_changeI2C.ino` sketch in the example folder includes a `scanAddr()` function.
 
 If the I2C device address is any other than the default value of `0x10`, that new, non-default address must be included with every subsequent command, includeing `getData()`, as the optional `addr` byte.
 
@@ -65,6 +64,7 @@ Also included in the repository are:
 <br />&nbsp;&nbsp;&#9679;&nbsp; An Arduino sketch "TFMPI2C_example.ino" in the Example folder.
 <br />&nbsp;&nbsp;&#9679;&nbsp; An Arduino sketch "TFMPI2C_changeI2C.ino" in the Example folder.
 <br />&nbsp;&nbsp;&#9679;&nbsp; Recent copies of manufacturer's Datasheet and Product Manual in Documents.
+<br />&nbsp;&nbsp;&#9679;&nbsp; A folder containing the Datasheet and Product Manual for the TFMini-S
 <br />&nbsp;&nbsp;&#9679;&nbsp; General information regarding Time of Flight distance sensing and the Texas Instruments OPT3101 module in Documents in the TI OPT3101 sub-folder.
 
 All of the code for this Library is richly commented to assist with understanding and in problem solving.

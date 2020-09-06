@@ -1,7 +1,7 @@
 # TFMini-Plus-I2C
 ### PLEASE NOTE:
 
-An device that quits unexpectedly can leave the I2C bus in a hung state, waiting for a data transfer to finish.  With version 1.5.0 of this library, users can call `recoverI2CBus()` instead of `Wire.begin()` in the `setup()` portion of a sketch.  See the library code file for more details.
+An device that quits unexpectedly can leave the I2C bus in a hung state, waiting for a data transfer to finish.  With version 1.5.0 of this library, users can call `recoverI2CBus()` instead of `Wire.begin()` in the `setup()` portion of their sketch to releave this condition.  See the library files for more details.
 
 Also in this version, redundant code to close the I2C interface following a `requestFrom()` created problems for some users.  It was not needed and has been eliminated.
 

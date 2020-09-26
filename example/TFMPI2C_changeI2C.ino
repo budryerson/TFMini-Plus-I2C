@@ -69,7 +69,7 @@ void setup()
     while( Serial.available())Serial.read();  // flush serial read buffer
 
     // Say hello
-    printlnf( "\r\n*****************************\r\n");
+    printf( "\r\n*****************************\r\n");
     printf( "\r\nThis sketch will command a TFMini-Plus device in");
     printf( "\r\nI2C communications mode to change the I2C address.");
     printf( "\r\nClose terminal window to halt program loop.\r\n");
@@ -103,7 +103,7 @@ void loop()
         {
             printf( "%02i.\r\n", newAddr);
         }
-        else tfmP.printErrorStatus();
+        else tfmP.printReply();
       }
       else  // If response is "N"
       {

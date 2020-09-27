@@ -1,7 +1,9 @@
 /* File Name: TFMPI2C_changeI2C.ino 
  * Developer: Bud Ryerson
  * Inception: 16 FEB 2020
- * Last work: 27 SEP 2020
+ * Last work: 27 SEP 2020 - I tried to replace every instance of `printf()` with Serial.print().
+ *     Some Arduinos, such as the Due and ESP32, are troublesome and require a CR/LF with every instance.
+ *     I thought we might be better without them.
  *
  * Description:
  *  Run an I2C address search.

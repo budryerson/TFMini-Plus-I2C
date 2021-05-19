@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C.h
  * Developer: Bud Ryerson
  * Date:      03 SEP 2020
- * Version:   1.5.0
+ * Version:   1.5.1
  * Described: Arduino Library for the Benewake TFMini-Plus Lidar sensor
  *            configured for the I2C interface
  *
@@ -66,6 +66,8 @@
  * v1.4.3 - 21AUG20 - Deleted all 'Wire.endTransmission()` functions
              after a 'Wire.requestFrom(true)' in TFMPI2C.cpp.
  * v1.5.0 - Added recoverI2CBus() function to free locked I2C bus
+ * v1.5.1 - 19MAY21 - Changed command paramter 'FRAME_5' to correct value.
+            It was set to 0x0003.  Now it's set to 0x0005
  */
 
 #ifndef TFMPI2C_H       // Guard to compile only once
@@ -155,7 +157,7 @@
 #define    FRAME_0            0x0000    // internal measurement rate
 #define    FRAME_1            0x0001    // expressed in hexidecimal
 #define    FRAME_2            0x0002
-#define    FRAME_5            0x0003
+#define    FRAME_5            0x0005
 #define    FRAME_10           0x000A
 #define    FRAME_20           0x0014
 #define    FRAME_25           0x0019

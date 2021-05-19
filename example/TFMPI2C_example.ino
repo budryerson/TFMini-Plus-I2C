@@ -1,6 +1,6 @@
 /* File Name: TFMPI2C_example.ino
  * Inception: 29 JAN 2019
- * Last work: 03 SEP 2020
+ * Last work: 19 MAY 2021
  * Developer: Bud Ryerson
  *
  * Description: This Arduino sketch is used to test the Benewake
@@ -66,7 +66,7 @@
                       // devices such as the Galileo. Download from:
                       // https://github.com/spaniakos/AES/blob/master/printf.h
 
-#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.5.0
+#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.5.1
 TFMPI2C tfmP;         // Create a TFMini-Plus I2C object
 
 void setup()
@@ -79,7 +79,7 @@ void setup()
 //    Wire.setClock( 400000);  // Set I2C bus speed to 'Fast' if
                                // your Arduino supports 400KHz.
 
-    printf( "\r\nTFMPlus I2C Library 1.5.0\r\n");  // say 'hello'
+    printf( "\r\nTFMPlus I2C Library 1.5.1\r\n");  // say 'hello'
 
     // Send some example commands to the TFMini-Plus
     // - - Perform a system reset - - - - - - - - - - -
@@ -98,7 +98,7 @@ void setup()
         printf( "%1u\r\n", tfmP.version[ 2]);
     }
     else tfmP.printReply();
-    // - - Set the data frame-rate to 250 - - - - - - - - -
+    // - - Set the data frame-rate to 20 - - - - - - - - -
     printf( "Data-Frame rate: ");
     if( tfmP.sendCommand( SET_FRAME_RATE, FRAME_20))
     {

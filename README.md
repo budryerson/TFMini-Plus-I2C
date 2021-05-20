@@ -1,23 +1,23 @@
 # TFMini-Plus-I2C
 ### PLEASE NOTE:
 
-An device that quits unexpectedly can leave the I2C bus in a hung state, waiting for a data transfer to finish.  With version 1.5.0 of this library, users can call `recoverI2CBus()` instead of `Wire.begin()` in the `setup()` portion of their sketch to releave this condition.  See the library files for more details.
+An I2C device that quits unexpectedly can leave the bus in a hung state, waiting for a data transfer to complete.  With version 1.5.0 of this library, users can call `recoverI2CBus()` instead of `Wire.begin()` in the `setup()` portion of the example sketch to releave this condition.  See the library files for more details.
 
-Also in this version, redundant code to close the I2C interface following a `requestFrom()` created problems for some users.  It was not needed and has been eliminated.
+Also in this version, redundant code to close the I2C bus following a `requestFrom()` created problems for some users.  It was not needed and has been eliminated.
 
 Three commands names have changed in this version:
 <br />&nbsp;&nbsp;&#9679;&nbsp;`OBTAIN_FIRMWARE_VERSION`  is now `GET_FIRMWARE_VERSION`
 <br />&nbsp;&nbsp;&#9679;&nbsp;`RESTORE_FACTORY_SETTINGS` is now `HARD_RESET`
 <br />&nbsp;&nbsp;&#9679;&nbsp;`SYSTEM_RESET`             is now `SOFT_RESET`
 
-With version v.1.4.0, data variables changed from unsigned to signed 16bit integers in order to support error codes returned in the `dist` (distance) and `flux` (signal strength) data. The only wokring error code at the moment is `-1` returned as `flux` data when the return signal is saturated.
+With version v.1.4.0, data variables changed from unsigned to signed 16bit integers in order to support error codes returned in the `dist` (distance) and `flux` (signal strength) data. The only working error code at the moment is a `-1` returned in `flux` data when the signal is saturated.
 
 In the example code, `printStatus()` or `printErrorStatus()` has been replaced with `printFrame()` in response to a failed `getData()` or `printReply()` if responding to `sendCommand()`.
 <hr />
 
 ### Arduino library for the Benewake TFMini-Plus using I2C communication interface
 
-The **TFMini-S** is said to be compatible with the **TFMini-Plus** and therefore able to use this library.  However, this library is *not compatible* with the **TFMini**, which is a different product with its own command and data structure.
+The **TFMini-S** is largely compatible with the **TFMini-Plus** and therefore able to use this library.  However, this library is *not compatible* with the **TFMini**, which has its own command and data structure, nor with the **TF-Luna** in I2C mode.
 
 Since hardware version 1.3.5 and firmware version 1.9.0, the TFMini-Plus can be configured to use the **I2C** (two-wire) protocol for its communication interface.  The command to configure the device for **I2C** communication must be sent using the **UART** interface.  Therefore, configuration should be made prior to the device's service installation either by using the TFMini-Plus library or by using a serial GUI test application available from the manufacturer.  Thereafter, this libarary can be used for all further communication with the device.
 
@@ -39,11 +39,11 @@ The `sendCommand( cmnd, param, addr)` function sends an unsigned, 32-bit command
 
 <hr>
 
-In **I2C** mode, the TFMini-Plus functions as an I2C slave device.  The default address is `0x10` (16 decimal), but is user-programable by sending the `SET_I2C_ADDRESS` command and a parameter in the range of `1` to `127`.  The new address will take effect immediately and permanently without sending a `SAVE_SETTINGS` command.
+In **I2C** mode, the TFMini-Plus functions like an I2C slave device.  The default address is `0x10` (16 decimal), but is user-programable by sending the `SET_I2C_ADDRESS` command and a parameter in the range of `1` to `127`.  A new address will take effect immediately and permanently without sending a `SAVE_SETTINGS` command.
 
-Although I2C address of the device can be changed while in UART communication mode, the value of an address cannot be tested in UART mode. For that, the device must be in I2C communication mode. Then you can scan the I2C bus for the presence of the device's addres. The `TFMPI2C_changeI2C.ino` sketch in the example folder includes a `scanAddr()` function.
+Although I2C address of the device can be changed while in UART communication mode, the value of an address cannot be tested in UART mode. For that, the device must be in I2C mode. Then a user can scan the I2C bus for the presence of the device's addres. The `TFMPI2C_changeI2C.ino` sketch in the example folder includes a `scanAddr()` function.
 
-If the I2C device address is any other than the default value of `0x10`, that new, non-default address must be included with every subsequent command, includeing `getData()`, as the optional `addr` byte.
+**If the I2C device address is any other than the default value of `0x10`, that new, non-default address must be included with every subsequent command, includeing `getData()`, as the optional `addr` byte.**
 
 The `HARD_RESET` command (Restore Factory Settings) will reset the device to the default address of `0x10`. The `SOFT_RESET` command (System Reset) appears to have no effect on the I2C address.  The `HARD_RESET` command will **not** restore the device to the default, **UART** communication interface mode.  The **only** way to return the device to serial mode is to send the `SET_SERIAL_MODE` command.
 
@@ -96,4 +96,4 @@ Also included in the repository are:
 <br />&nbsp;&nbsp;&#9679;&nbsp; A folder containing the Datasheet and Product Manual for the TFMini-S
 <br />&nbsp;&nbsp;&#9679;&nbsp; General information regarding Time of Flight distance sensing and the Texas Instruments OPT3101 module in Documents in the TI OPT3101 sub-folder.
 
-All of the code for this Library is richly commented to assist with understanding and in problem solving.
+All of the code for this library is richly commented to assist with understanding and in problem solving.

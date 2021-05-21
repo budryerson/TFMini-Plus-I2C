@@ -85,7 +85,7 @@ Command byte number:<br />
 <br />
 If an object's distance is greater than the Near distance (D) plus the Zone width (Z) then the object is "far."<br />
 If the distance is less than the Near distance (D) then the object is "near".<br />
-The Zone is a neutral area. Any object distances measured in this range does not change the output.<br />
+The Zone is a neutral area. Any object distances measured in this range do not change the output.<br />
 The output can be set to be either high when the object is near, and low when it's far (Mode 1); 
 <hr>
 

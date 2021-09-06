@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C.h
  * Developer: Bud Ryerson
  * Date:      19 MAY 2021
- * Version:   1.5.1
+ * Version:   1.6.0
  * Described: Arduino Library for the Benewake TFMini-Plus Lidar sensor
  *            configured for the I2C interface
  *
@@ -68,6 +68,7 @@
  * v1.5.0 - Added recoverI2CBus() function to free locked I2C bus
  * v1.5.1 - 19MAY21 - Changed command paramter 'FRAME_5' to correct value.
             It was set to 0x0003.  Now it's set to 0x0005
+ * v.1.6.0 - 06SEP21 - Corrected (reversed) Enable/Disable commands
  */
 
 #ifndef TFMPI2C_H       // Guard to compile only once
@@ -130,8 +131,8 @@
 #define    STANDARD_FORMAT_CM         0x01050505   //           "
 #define    STANDARD_FORMAT_MM         0x06050505   //           "
 #define    SET_BAUD_RATE              0x00060808   //           "
-#define    ENABLE_OUTPUT              0x00070505   //           "
-#define    DISABLE_OUTPUT             0x01070505   //           "
+#define    ENABLE_OUTPUT              0x01070505   //           "
+#define    DISABLE_OUTPUT             0x00070505   //           "
 #define    SET_I2C_ADDRESS            0x100B0505   //           "
 
 

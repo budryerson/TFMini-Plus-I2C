@@ -1,23 +1,25 @@
 # TFMini-Plus-I2C
 ### PLEASE NOTE:
 
-An I2C device that quits unexpectedly can leave the bus in a hung state, waiting for a data transfer to complete.  With version 1.5.0 of this library, users can call `recoverI2CBus()` instead of `Wire.begin()` in the `setup()` portion of the example sketch to releave this condition.  See the library files for more details.
+**v1.6.0** - This version reverses and corrects the `ENABLE_OUTPUT` and `DISABLE_OUTPUT` commands.<br />
 
-Also in this version, redundant code to close the I2C bus following a `requestFrom()` created problems for some users.  It was not needed and has been eliminated.
+**v1.5.0** - An I2C device that quits unexpectedly can leave the bus in a hung state, waiting for a data transfer to complete.  With this version, users can call `recoverI2CBus()` instead of `Wire.begin()` in the `setup()` portion of the example sketch to releave this condition.  See the library files for more details.<br />
+
+Also in this version, redundant code to close the I2C bus following a `requestFrom()` created problems for some users.  It was not needed and has been eliminated.<br />
 
 Three commands names have changed in this version:
 <br />&nbsp;&nbsp;&#9679;&nbsp;`OBTAIN_FIRMWARE_VERSION`  is now `GET_FIRMWARE_VERSION`
 <br />&nbsp;&nbsp;&#9679;&nbsp;`RESTORE_FACTORY_SETTINGS` is now `HARD_RESET`
-<br />&nbsp;&nbsp;&#9679;&nbsp;`SYSTEM_RESET`             is now `SOFT_RESET`
+<br />&nbsp;&nbsp;&#9679;&nbsp;`SYSTEM_RESET`             is now `SOFT_RESET`<br />
 
-With version v.1.4.0, data variables changed from unsigned to signed 16bit integers in order to support error codes returned in the `dist` (distance) and `flux` (signal strength) data. The only working error code at the moment is a `-1` returned in `flux` data when the signal is saturated.
+**v1.4.0** - With this version, data variables changed from unsigned to signed 16bit integers in order to support error codes returned in the `dist` (distance) and `flux` (signal strength) data. The only working error code at the moment is a `-1` returned in `flux` data when the signal is saturated.
 
 In the example code, `printStatus()` or `printErrorStatus()` has been replaced with `printFrame()` in response to a failed `getData()` or `printReply()` if responding to `sendCommand()`.
 <hr />
 
 ### Arduino library for the Benewake TFMini-Plus using I2C communication interface
 
-The **TFMini-S** is largely compatible with the **TFMini-Plus** and therefore able to use this library.  However, this library is *not compatible* with the **TFMini**, which has its own command and data structure, nor with the **TF-Luna** in I2C mode.
+The **TFMini-S** is largely compatible with the **TFMini-Plus** and is able to use this library.  Although compatible in the UART (serial) mode, the **TFLuna** is _not compatible_ with this library in **I2C** mode, and it is *not compatible* with the **TFMini**, which has its own unique command and data structure.
 
 Since hardware version 1.3.5 and firmware version 1.9.0, the TFMini-Plus can be configured to use the **I2C** (two-wire) protocol for its communication interface.  The command to configure the device for **I2C** communication must be sent using the **UART** interface.  Therefore, configuration should be made prior to the device's service installation either by using the TFMini-Plus library or by using a serial GUI test application available from the manufacturer.  Thereafter, this libarary can be used for all further communication with the device.
 

@@ -66,7 +66,7 @@
                       // devices such as the Galileo. Download from:
                       // https://github.com/spaniakos/AES/blob/master/printf.h
 
-#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.5.1
+#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.6.0
 TFMPI2C tfmP;         // Create a TFMini-Plus I2C object
 
 void setup()
@@ -79,7 +79,7 @@ void setup()
 //    Wire.setClock( 400000);  // Set I2C bus speed to 'Fast' if
                                // your Arduino supports 400KHz.
 
-    printf( "\r\nTFMPlus I2C Library 1.5.1\r\n");  // say 'hello'
+    printf( "\r\nTFMPlus I2C Library 1.6.0\r\n");  // say 'hello'
 
     // Send some example commands to the TFMini-Plus
     // - - Perform a system reset - - - - - - - - - - -

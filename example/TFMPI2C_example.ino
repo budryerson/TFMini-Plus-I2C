@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C_example.ino
- * Inception: 29 JAN 2019
- * Last work: 19 MAY 2021
  * Developer: Bud Ryerson
+ * Inception: 29JAN2019
+ * Last work: 10SEP2021
  *
  * Description: This Arduino sketch is used to test the Benewake
  * TFMini-Plus time-of-flight Lidar ranging sensor in the I2C
@@ -79,7 +79,7 @@ void setup()
 //    Wire.setClock( 400000);  // Set I2C bus speed to 'Fast' if
                                // your Arduino supports 400KHz.
 
-    printf( "\r\nTFMPlus I2C Library 1.6.0\r\n");  // say 'hello'
+    printf( "\r\nTFMPlus I2C Library Example - 10SEP2021\r\n");  // say 'hello'
 
     // Send some example commands to the TFMini-Plus
     // - - Perform a system reset - - - - - - - - - - -
@@ -106,21 +106,31 @@ void setup()
     }
     else tfmP.printReply();
     // - - - - - - - - - - - - - - - - - - - - - - - -
-/*    // - - Set Serial Mode - - - - - - - - - - -
+
+/*  // - - - - - - - - - - - - - - - - - - - - - - - -
+    // The next two commands may be used to switch the device
+    // into UART (serial) mode.  This sketch will no longer
+    // receive I2C data.  The 'TFMPlus_example' sketch in the
+    // TFMPlus Library can be used to switch the device back
+    // to I2C mode.
+    // Don't forget to switch the cables, too.
+    // - - - - - - - - - - - - - - - - - - - - - - - -
+
+    // - - Set Serial Mode - - - - - - - - - - -
     printf( "Set Serial Mode: ");
     if( tfmP.sendCommand( SET_SERIAL_MODE, 0))
     {
-        printf( "passed.\r\n");
+        printf( "mode set.\r\n");
     }
     else tfmP.printReply();
-    // - - Set Serial Mode - - - - - - - - - - -
-    printf( "Save Settring: ");
+    printf( "Save Settings: ");
     if( tfmP.sendCommand( SAVE_SETTINGS, 0))
     {
-        printf( "passed.\r\n");
+        printf( "saved.\r\n");
     }
     else tfmP.printReply();
 */
+
     delay(500);            // And wait for half a second.
 }
 

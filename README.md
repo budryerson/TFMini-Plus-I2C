@@ -21,26 +21,34 @@ In the example code, `printStatus()` or `printErrorStatus()` has been replaced w
 
 The **TFMini-S** is largely compatible with the **TFMini-Plus** and is able to use this library.  Although compatible in the UART (serial) mode, the **TFLuna** is _not compatible_ with this library in **I2C** mode, and it is *not compatible* with the **TFMini**, which has its own unique command and data structure.
 
-Since hardware version 1.3.5 and firmware version 1.9.0, the TFMini-Plus can be configured to use the **I2C** (two-wire) protocol for its communication interface.  The command to configure the device for **I2C** communication must be sent using the **UART** interface.  Therefore, configuration should be made prior to the device's service installation either by using the TFMini-Plus library or by using a serial GUI test application available from the manufacturer.  Thereafter, this libarary can be used for all further communication with the device.
+Since hardware version 1.3.5 and firmware version 1.9.0, the TFMini-Plus can be configured to use the **I2C** (two-wire) protocol for its communication interface.  The command to configure the device for **I2C** communication must be sent using the **UART** interface.  Therefore, configuration should be made prior to the device's service installation either by using the TFMini-Plus library or by using a serial GUI test application available from the manufacturer.  Thereafter, this libarary can be used for all further communication with the device.  _When switching between communication modes, please remember to switch the data cables, too.  That sounds obvious, but has tripped me up more than once._
 
 This library calls the Arduino standard I2C/Two-Wire Library.
 <hr />
 
 ### Arduino Library Commands
 
-The `getData( dist, flux, temp, addr)` function passes back three, signed, 16-bit measurement data values and sends an optional, unsigned, 8-bit address.  If the default device address is used, the optional `addr` value may be omitted.  Otherwise, a correct `addr` value always must be sent.  If the function completes without error, it returns 'True' and sets the public, one-byte 'status' code to zero.  Otherwise, it returns 'False' and sets the 'status' code to a library defined error code.
+`getData( dist, flux, temp, addr)`&nbsp; passes back three, signed, 16-bit measurement data values and sends an optional, unsigned, 8-bit address.  If the default device address is used, the optional `addr` value may be omitted.  Otherwise, a correct `addr` value always must be sent.  If the function completes without error, it returns 'True' and sets the public, one-byte 'status' code to zero.  Otherwise, it returns 'False' and sets the 'status' code to a library defined error code.
 
 Measurement data values are passed-back in three, 16-bit, signed integer variables:
 <br />&nbsp;&nbsp;&#9679;&nbsp; `dist` Distance to target in centimeters. Range: 0 - 1200
 <br />&nbsp;&nbsp;&#9679;&nbsp; `flux` Strength or quality of return signal or error. Range: -1, 0 - 32767
 <br />&nbsp;&nbsp;&#9679;&nbsp; `temp` Temperature of device chip in code. Range: -25°C to 125°C
 
-For further convenience and simplicity, the `getData( dist)` and `getData( dist, addr)` functions are included. These functions pass back distance data only and use either the default or an assigned I2C address.
+`getData( dist)`&nbsp; and `getData( dist, addr)`&nbsp; functions are included for further convenience and simplicity.  These functions pass back only distance data and use either the default or an assigned I2C address.
 
-The `sendCommand( cmnd, param, addr)` function sends an unsigned, 32-bit command, an unsigned, 32-bit parameter and an optional, unsigned, 8-bit I2C address to the device.  A proper command (`cmnd`) must be chosen from the library's list of defined commands.  A parameter (`param`) can be entered directly (0x10, 250, etc.), or chosen from the Library's list of defined parameters.  If the default device address is used, the optional `addr` value may be omitted.  If the function completes without error, it returns 'True' and sets a public, one-byte 'status' code to zero.  Otherwise, it returns 'False' and sets the 'status' to a Library defined error code.
+`sendCommand( cmnd, param, addr)`&nbsp; function sends an unsigned, 32-bit command, an unsigned, 32-bit parameter and an optional, unsigned, 8-bit I2C address to the device.  A proper command (`cmnd`) must be chosen from the library's list of defined commands.  A parameter (`param`) can be entered directly (0x10, 250, etc.), or chosen from the Library's list of defined parameters.  For many commands, i.e. `HARD_RESET`, the correct `param` is a `0` (zero).  If the default device address is used, the optional `addr` value may be omitted.  If the function completes without error, it returns 'True' and sets a public, one-byte 'status' code to zero.  Otherwise, it returns 'False' and sets the 'status' to a Library defined error code.
 
+`cmnd`&nbsp;&nbsp; The defined commands are:<br />
+`GET_FIRMWARE_VERSION`, `TRIGGER_DETECTION`, `SOFT_RESET`, `HARD_RESET`, `SAVE_SETTINGS`, `SET_FRAME_RATE`, `SET_BAUD_RATE`, `STANDARD_FORMAT_CM`, `STANDARD_FORMAT_MM`, `ENABLE_OUTPUT`, `DISABLE_OUTPUT`, `SET_I2C_ADDRESS`, `SET_SERIAL_MODE`, `SET_I2C_MODE`, `I2C_FORMAT_CM`, `I2C_FORMAT_MM`
+
+`param`&nbsp;&nbsp; The defined paramters are:<br />
+`BAUD_9600`, `BAUD_14400`, `BAUD_19200`, `BAUD_56000`, `BAUD_115200`, `BAUD_460800`, `BAUD_921600`<br />
+and<br />
+`FRAME_0`, `FRAME_1`, `FRAME_2`, `FRAME_5`, `FRAME_10`, `FRAME_20`, `FRAME_25`, `FRAME_50`, `FRAME_100`, `FRAME_125`, `FRAME_200`, `FRAME_250`, `FRAME_500`, `FRAME_1000`
 <hr>
 
+### Using the I2C version of the device
 In **I2C** mode, the TFMini-Plus functions like an I2C slave device.  The default address is `0x10` (16 decimal), but is user-programable by sending the `SET_I2C_ADDRESS` command and a parameter in the range of `1` to `127`.  A new address will take effect immediately and permanently without sending a `SAVE_SETTINGS` command.
 
 Although I2C address of the device can be changed while in UART communication mode, the value of an address cannot be tested in UART mode. For that, the device must be in I2C mode. Then a user can scan the I2C bus for the presence of the device's addres. The `TFMPI2C_changeI2C.ino` sketch in the example folder includes a `scanAddr()` function.
@@ -59,7 +67,7 @@ Also, according to Benewake:
 Benewake says the data frame-rate is limited to 1KHz, which would suggest a 400Hz data sampling limit in **I2C** mode.  But Benewake also says data sampling should not exceed 100Hz.  They don't say why; but you might keep those supposed limitations in mind while you are using the **I2C** interface.
 
 Frame-rate changes should be followed by a `SAVE_SETTINGS` command or may be lost when power is removed.  There is no way to determine what the data frame-rate is actually set to.
-<hr>
+<hr />
 
 ### Using the I/O modes of the device
 The so-called I/O modes are not supported in this library.  Please do not attempt to use any I/O commands that you may find to be defined in this library's header file.

@@ -68,7 +68,7 @@
  * v1.5.0 - 03SEP20 - Added recoverI2CBus() function to free locked I2C bus
  * v1.5.1 - 19MAY21 - Changed command paramter 'FRAME_5' to correct value.
             It was set to 0x0003.  Now it's set to 0x0005
- * v.1.5.0 - 06SEP21 - Corrected (reversed) Enable/Disable commands in 'TFMPI2C.h'    
+ * v1.6.0 - 06SEP21 - Corrected (reversed) Enable/Disable commands in 'TFMPI2C.h'    
  */
 
 #include <TFMPI2C.h>       //  TFMini-Plus I2C library header

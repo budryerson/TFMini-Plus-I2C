@@ -1,9 +1,12 @@
 # TFMini-Plus-I2C
 ### PLEASE NOTE:
 
+**v1.7.0** - This version relaxes use of the `recoverI2Cbus()` function by assuming default I2C port pin numbers. Also, it is extended to a second I2C port, if any.  And, the function has been added to the example sketch.<br />
+NOTE: Using this function may have helped resolve some erratic Arduino Due problems.
+
 **v1.6.0** - This version reverses and corrects the `ENABLE_OUTPUT` and `DISABLE_OUTPUT` commands.<br />
 
-**v1.5.0** - An I2C device that quits unexpectedly can leave the bus in a hung state, waiting for a data transfer to complete.  With this version, users can call `recoverI2CBus()` instead of `Wire.begin()` in the `setup()` portion of the example sketch to releave this condition.  See the library files for more details.<br />
+**v1.5.0** - An I2C device that quits unexpectedly can leave the bus in a hung state, waiting for a data transfer to complete.  With this version, users can call `recoverI2CBus()` instead of `Wire.begin()` in the `setup()` portion of the example sketch to relieve this condition.  See the library files for more details.<br />
 
 Also in this version, redundant code to close the I2C bus following a `requestFrom()` created problems for some users.  It was not needed and has been eliminated.<br />
 
@@ -19,11 +22,11 @@ In the example code, `printStatus()` or `printErrorStatus()` has been replaced w
 
 ### Arduino library for the Benewake TFMini-Plus using I2C communication interface
 
-The **TFMini-S** is largely compatible with the **TFMini-Plus** and is able to use this library.  Although compatible in the UART (serial) mode, the **TFLuna** is _not compatible_ with this library in **I2C** mode, and it is *not compatible* with the **TFMini**, which has its own unique command and data structure.
+The **TFMini-S** is largely compatible with the **TFMini-Plus** and both are able to use this library.  Although the **TFLuna** is compatible with the **TFMini-Plus** in the UART (serial) mode, in **I2C** mode it is very different and therefor this library is _not compatible_ with the **TFLuna** in **I2C** mode.  This library is also *not compatible* with the **TFMini**, a product with its own unique command and data structure.
 
 Since hardware version 1.3.5 and firmware version 1.9.0, the TFMini-Plus can be configured to use the **I2C** (two-wire) protocol for its communication interface.  The command to configure the device for **I2C** communication must be sent using the **UART** interface.  Therefore, configuration should be made prior to the device's service installation either by using the TFMini-Plus library or by using a serial GUI test application available from the manufacturer.  Thereafter, this libarary can be used for all further communication with the device.  _When switching between communication modes, please remember to switch the data cables, too.  That sounds obvious, but has tripped me up more than once._
 
-This library calls the Arduino standard I2C/Two-Wire Library.
+This library calls the Arduino **Wire** library.  Although largely standardized, the Wire library has been customized to accommodate a wide variety of Arduino boards that are available.
 <hr />
 
 ### Arduino Library Commands
@@ -35,9 +38,9 @@ Measurement data values are passed-back in three, 16-bit, signed integer variabl
 <br />&nbsp;&nbsp;&#9679;&nbsp; `flux` Strength or quality of return signal or error. Range: -1, 0 - 32767
 <br />&nbsp;&nbsp;&#9679;&nbsp; `temp` Temperature of device chip in code. Range: -25°C to 125°C
 
-`getData( dist)`&nbsp; and `getData( dist, addr)`&nbsp; functions are included for further convenience and simplicity.  These functions pass back only distance data and use either the default or an assigned I2C address.
+`getData( dist)`&nbsp; and `getData( dist, addr)`&nbsp; functions are included for further simplicity and convenience.  These two functions pass back only distance data and use either the default or an assigned I2C address.
 
-`sendCommand( cmnd, param, addr)`&nbsp; function sends an unsigned, 32-bit command, an unsigned, 32-bit parameter and an optional, unsigned, 8-bit I2C address to the device.  A proper command (`cmnd`) must be chosen from the library's list of defined commands.  A parameter (`param`) can be entered directly (0x10, 250, etc.), or chosen from the Library's list of defined parameters.  For many commands, i.e. `HARD_RESET`, the correct `param` is a `0` (zero).  If the default device address is used, the optional `addr` value may be omitted.  If the function completes without error, it returns 'True' and sets a public, one-byte 'status' code to zero.  Otherwise, it returns 'False' and sets the 'status' to a Library defined error code.
+`sendCommand( cmnd, param, addr)`&nbsp; function sends an unsigned, 32-bit command, an unsigned, 32-bit parameter and an optional, unsigned, 8-bit I2C address to the device.  A proper command (`cmnd`) must be chosen from the library's list of defined commands.  A parameter (`param`) can be entered directly (0x10, 250, etc.), or chosen from the Library's list of defined parameters.  For many commands, i.e. `HARD_RESET`, the correct `param` is a `0` (zero).  If the default device address is used, the optional `addr` value may be omitted.  If the function completes without error, it returns 'true' and sets a public, one-byte 'status' code to zero.  Otherwise, it returns 'false' and sets the 'status' to a Library defined error code.
 
 `cmnd`&nbsp;&nbsp; The defined commands are:<br />
 `GET_FIRMWARE_VERSION`, `TRIGGER_DETECTION`, `SOFT_RESET`, `HARD_RESET`, `SAVE_SETTINGS`, `SET_FRAME_RATE`, `SET_BAUD_RATE`, `STANDARD_FORMAT_CM`, `STANDARD_FORMAT_MM`, `ENABLE_OUTPUT`, `DISABLE_OUTPUT`, `SET_I2C_ADDRESS`, `SET_SERIAL_MODE`, `SET_I2C_MODE`, `I2C_FORMAT_CM`, `I2C_FORMAT_MM`
@@ -49,11 +52,11 @@ and<br />
 <hr>
 
 ### Using the I2C version of the device
-In **I2C** mode, the TFMini-Plus functions like an I2C slave device.  The default address is `0x10` (16 decimal), but is user-programable by sending the `SET_I2C_ADDRESS` command and a parameter in the range of `1` to `127`.  A new address will take effect immediately and permanently without sending a `SAVE_SETTINGS` command.
+In **I2C** mode, the TFMini-Plus functions like an I2C slave device.  The default address is `0x10` (16 decimal), but is user-programmable by sending the `SET_I2C_ADDRESS` command and a parameter in the range of `1` to `127`.  A new address will take effect immediately and permanently without sending a `SAVE_SETTINGS` command.
 
-Although I2C address of the device can be changed while in UART communication mode, the value of an address cannot be tested in UART mode. For that, the device must be in I2C mode. Then a user can scan the I2C bus for the presence of the device's addres. The `TFMPI2C_changeI2C.ino` sketch in the example folder includes a `scanAddr()` function.
+Although I2C address of the device can be changed while in UART communication mode, the value of that address cannot be tested in UART mode. For that, the device must be in I2C mode. Then a user can scan the I2C bus for the presence of the device's address. The `TFMPI2C_changeI2C.ino` sketch in the example folder includes a `scanAddr()` function.
 
-**If the I2C device address is any other than the default value of `0x10`, that new, non-default address must be included with every subsequent command, includeing `getData()`, as the optional `addr` byte.**
+**If the I2C device address is any other than the default value of `0x10`, that new, non-default address must be included with every subsequent command, including `getData()`, as the optional `addr` byte.**
 
 The `HARD_RESET` command (Restore Factory Settings) will reset the device to the default address of `0x10`. The `SOFT_RESET` command (System Reset) appears to have no effect on the I2C address.  The `HARD_RESET` command will **not** restore the device to the default, **UART** communication interface mode.  The **only** way to return the device to serial mode is to send the `SET_SERIAL_MODE` command.
 
@@ -61,7 +64,7 @@ Benewake is not forthcoming about the internals of the device, however they did 
 >Some commands that modify internal parameters are processed within 1ms.  Some commands (that) require the MCU to communicate with other chips may take several ms.  And some commands, such as saving configuration and restoring the factory (default settings) need to erase the FLASH of the MCU, which may take several hundred ms.
 
 Also, according to Benewake:
->The measuring frequency (frame-rate) of the module should be 2.5 times larger than the I2C reading frquency.<br />
+>The measuring frequency (frame-rate) of the module should be 2.5 times larger than the I2C reading frequency.<br />
 >The I2C reading frequency should not exceed 100Hz.<br />
 
 Benewake says the data frame-rate is limited to 1KHz, which would suggest a 400Hz data sampling limit in **I2C** mode.  But Benewake also says data sampling should not exceed 100Hz.  They don't say why; but you might keep those supposed limitations in mind while you are using the **I2C** interface.

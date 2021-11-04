@@ -21,6 +21,7 @@ sendCommand	KEYWORD2
 printFrame	KEYWORD2
 printReply	KEYWORD2
 getResponse	KEYWORD2
+recoverI2CBus KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

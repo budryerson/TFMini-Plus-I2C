@@ -1,8 +1,8 @@
 # TFMini-Plus-I2C
 ### PLEASE NOTE:
+**v1.7.2** - All delays are eliminated from the `recoverI2Cbus()` function so that data acquisition can resume as quickly as possible after an I2C error.  If SDA and SCL pin numbers are specified, the function acts silently.  The default version displays status, i.e. "Recover default I2C bus.".
 
-**v1.7.0** - This version relaxes use of the `recoverI2Cbus()` function by assuming default I2C port pin numbers. Also, it is extended to a second I2C port, if any.  And, the function has been added to the example sketch.<br />
-NOTE: Using this function may have helped resolve some erratic Arduino Due problems.
+**v1.7.0** - This version extends use of the `recoverI2Cbus()` function by assuming default I2C port pin numbers. If pins are not specified, the function will look for and include a second I2C port, if any. This function has been added to the example sketch.
 
 **v1.6.0** - This version reverses and corrects the `ENABLE_OUTPUT` and `DISABLE_OUTPUT` commands.<br />
 
@@ -59,6 +59,8 @@ Although I2C address of the device can be changed while in UART communication mo
 **If the I2C device address is any other than the default value of `0x10`, that new, non-default address must be included with every subsequent command, including `getData()`, as the optional `addr` byte.**
 
 The `HARD_RESET` command (Restore Factory Settings) will reset the device to the default address of `0x10`. The `SOFT_RESET` command (System Reset) appears to have no effect on the I2C address.  The `HARD_RESET` command will **not** restore the device to the default, **UART** communication interface mode.  The **only** way to return the device to serial mode is to send the `SET_SERIAL_MODE` command.
+
+Since Version 1.5.0 of the Library, a `recoverI2Cbus( SDA, SCL)` function is available to clear an I2C bus "hung" condition after an I2C error is reported.  If pin numbers are not specified, `recoverI2Cbus()` will use the default pin numbers specified in the board's `varints.h` file.
 
 Benewake is not forthcoming about the internals of the device, however they did share this:
 >Some commands that modify internal parameters are processed within 1ms.  Some commands (that) require the MCU to communicate with other chips may take several ms.  And some commands, such as saving configuration and restoring the factory (default settings) need to erase the FLASH of the MCU, which may take several hundred ms.

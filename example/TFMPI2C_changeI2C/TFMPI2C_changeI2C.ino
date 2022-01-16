@@ -5,7 +5,7 @@
  *                          because some Arduinos, such as the Due and ESP32, require
  *                          a CR/LF with every instance. Might be better without them.
  *            04 OCT 2021 - Corrected typo in line 136
- *            15 JAN 2022 - Added timeout for unrecognized repsonse to prompt.
+ *            15 JAN 2022 - Added timeout for unrecognized response to prompt.
  *
  * Description: Run an I2C address search.
  *              Use first address found as old address.
@@ -144,7 +144,7 @@ void loop()
       }
     }
     Serial.println();    
-    Serial.println( "Program will restart in 5 seconds.");
+    Serial.println( "Program will restart in 4 seconds.");
     Serial.println( "*****************************");
     delay( 4000);           // And wait for 4 seconds
 }

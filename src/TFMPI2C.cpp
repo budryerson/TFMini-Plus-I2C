@@ -102,7 +102,7 @@ bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Request one data-frame from the slave device address
     // and close the I2C interface.
-    Wire.requestFrom( (int)addr, TFMP_FRAME_SIZE, true);
+    Wire.requestFrom( (int)addr, TFMP_FRAME_SIZE, (int)true);
 
     memset( frame, 0, sizeof( frame));     // Clear the data-frame buffer.
     for( uint8_t i = 0; i < TFMP_FRAME_SIZE; i++)
@@ -261,7 +261,7 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
 
     // Request reply data from the device and
     // close the I2C interface.
-    Wire.requestFrom( (int)addr, (int)replyLen, true);
+    Wire.requestFrom( (int)addr, (int)replyLen, (int)true);
 
     memset( reply, 0, sizeof( reply));   // Clear the reply data buffer.
     for( uint8_t i = 0; i < replyLen; i++)

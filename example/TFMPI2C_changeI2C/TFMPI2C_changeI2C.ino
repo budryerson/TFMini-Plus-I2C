@@ -5,7 +5,7 @@
  *                          because some Arduinos, such as the Due and ESP32, require
  *                          a CR/LF with every instance. Might be better without them.
  *            04 OCT 2021 - Corrected typo in line 136
- *            15 JAN 2022 - Added timeout for unrecognized response to prompt.
+ *            15 JAN 2022 - Added timeout for unrecognized repsonse to prompt.
  *
  * Description: Run an I2C address search.
  *              Use first address found as old address.
@@ -19,7 +19,7 @@
                       // devices such as the Galileo. Download from:
                       // https://github.com/spaniakos/AES/blob/master/printf.h
 
-#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.7.2
+#include <TFMPI2C.h>  // TFMini-Plus I2C Library v1.7.3
 TFMPI2C tfmP;         // Create a TFMini-Plus I2C object
 
 // Declare variables
@@ -144,7 +144,7 @@ void loop()
       }
     }
     Serial.println();    
-    Serial.println( "Program will restart in 4 seconds.");
+    Serial.println( "Program will restart in 5 seconds.");
     Serial.println( "*****************************");
     delay( 4000);           // And wait for 4 seconds
 }

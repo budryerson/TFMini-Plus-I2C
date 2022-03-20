@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C.cpp
  * Developer: Bud Ryerson
- * Date:      14 JAN 2021
- * Version:   1.7.2
+ * Date:      05 MAR 2022
+ * Version:   1.7.3
  * Described: Arduino Library for the Benewake TFMini-Plus LiDAR sensor
  *            configured for the I2C interface
  *
@@ -74,6 +74,11 @@
  * v1.7.1 - 16NOV21 - Shortened bus recovery delay to 300ms.
             Corrected some typos in comments.
  * v1.7.2 - 13JAN21 - Eliminated all delays in bus recovery
+ * v1.7.3 - 05MAR22 - Different Arduinos have different Wire libraries.
+            The most common signature of `requestFrom` is `(int, int, int)`
+            In our two calls, the final `stopbit` value is changed from
+            boolean `true` to literal `1`.  The only effect should be
+            to prevent some IDE error messages.
  */
 
 #include <TFMPI2C.h>       //  TFMini-Plus I2C library header
@@ -102,7 +107,7 @@ bool TFMPI2C::getData( int16_t &dist, int16_t &flux, int16_t &temp, uint8_t addr
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Request one data-frame from the slave device address
     // and close the I2C interface.
-    Wire.requestFrom( (int)addr, TFMP_FRAME_SIZE, true);
+    Wire.requestFrom( (int)addr, TFMP_FRAME_SIZE, 1);
 
     memset( frame, 0, sizeof( frame));     // Clear the data-frame buffer.
     for( uint8_t i = 0; i < TFMP_FRAME_SIZE; i++)
@@ -261,7 +266,7 @@ bool TFMPI2C::sendCommand( uint32_t cmnd, uint32_t param, uint8_t addr)
 
     // Request reply data from the device and
     // close the I2C interface.
-    Wire.requestFrom( (int)addr, (int)replyLen, true);
+    Wire.requestFrom( (int)addr, (int)replyLen, 1);
 
     memset( reply, 0, sizeof( reply));   // Clear the reply data buffer.
     for( uint8_t i = 0; i < replyLen; i++)

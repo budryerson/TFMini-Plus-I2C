@@ -1,7 +1,7 @@
 /* File Name: TFMPI2C.h
  * Developer: Bud Ryerson
- * Date:      14 JAN 2021
- * Version:   1.7.2
+ * Date:      05 MAR 2022
+ * Version:   1.7.3
  * Described: Arduino Library for the Benewake TFMini-Plus LiDAR
  *            sensor configured for the I2C interface
  *
@@ -74,7 +74,8 @@
             Instead use pins defined by the 'variants.h' file for each board.
  * v1.7.1 - 16NOV21 - Shortened bus recovery delay to 300ms.
             Corrected some typos in comments.
- * v1.7.2 - 13JAN21 - Eliminated all delays in bus recovery            
+ * v1.7.2 - 13JAN21 - Eliminated all delays in bus recovery
+ * v1.7.3 - 05MAR22 - changed stopbit typecast in call to Wire library
  */
 
 #ifndef TFMPI2C_H       // Guard to compile only once

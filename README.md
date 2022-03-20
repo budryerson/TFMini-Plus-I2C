@@ -1,5 +1,9 @@
 # TFMini-Plus-I2C
 ### PLEASE NOTE:
+**v1.7.3** - Different Arduinos use different Wire libraries.  The for `requestFrom` the most common signature is `( int, int, int)`.  For the two calls in this library, the final `stopbit` value is changed from boolean `true` to literal `1` to prevent certain IDE error messages.
+
+A big "Thank you!" to Hans Boot (https://github.com/hb020) for finding, researching and gently correcting this error.
+
 **v1.7.2** - All delays are eliminated from the `recoverI2Cbus()` function so that data acquisition can resume as quickly as possible after an I2C error.  If SDA and SCL pin numbers are specified, the function acts silently.  The default version displays status, i.e. "Recover default I2C bus.".
 
 **v1.7.0** - This version extends use of the `recoverI2Cbus()` function by assuming default I2C port pin numbers. If pins are not specified, the function will look for and include a second I2C port, if any. This function has been added to the example sketch.
